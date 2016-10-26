@@ -19,8 +19,10 @@ class TestHarness(implicit val p: Parameters) extends Module {
 
   val nMemChannels = dut.io.mem_axi.size
   for (axi <- dut.io.mem_axi) {
-    val mem = Module(new SimAXIMem(BigInt(p(ExtMemSize) / nMemChannels)))
+    val mem = Module(new SimDRAM)
     mem.io.axi <> axi
+    mem.io.clock := clock
+    mem.io.reset := reset
   }
 
   ser.io.serial <> dut.io.serial

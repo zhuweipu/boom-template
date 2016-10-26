@@ -16,13 +16,16 @@ debug: $(simv_debug)
 
 include $(base_dir)/Makefrag
 
+testchip_dir = $(base_dir)/testchipip
+include $(testchip_dir)/Makefrag
+
 sim_vsrcs = \
 	$(build_dir)/$(PROJECT).$(MODEL).$(CONFIG).v \
 	$(base_dir)/rocket-chip/vsrc/TestDriver.v \
-	$(base_dir)/testchipip/vsrc/SimSerial.v
+	$(testchip_vsrcs)
 
 sim_csrcs = \
-	$(base_dir)/testchipip/csrc/SimSerial.cc
+	$(testchip_csrcs)
 
 VCS = vcs -full64
 
@@ -30,11 +33,14 @@ VCS_OPTS = -notice -line +lint=all,noVCDE,noONGS,noUI -error=PCWM-L -timescale=1
 	+rad +v2k +vcs+lic+wait \
 	+vc+list -CC "-I$(VCS_HOME)/include" \
 	-CC "-I$(RISCV)/include" \
+	-CC "$(testchip_includes)" \
 	-CC "-std=c++11" \
 	-CC "-Wl,-rpath,$(RISCV)/lib" \
 	$(RISCV)/lib/libfesvr.so \
+	$(testchip_libs) \
 	-sverilog \
 	+incdir+$(generated_dir) \
+	+incdir+$(testchip_dir)/vsrc \
 	+define+CLOCK_PERIOD=1.0 $(sim_vsrcs) $(sim_csrcs) \
 	+define+PRINTF_COND=$(TB).printf_cond \
 	+define+STOP_COND=!$(TB).reset \
@@ -46,15 +52,17 @@ VCS_OPTS = -notice -line +lint=all,noVCDE,noONGS,noUI -error=PCWM-L -timescale=1
 
 verilog: $(sim_vsrcs)
 
-$(simv): $(sim_vsrcs) $(sim_csrcs)
+ini_files = $(addprefix $(sim_dir)/dramsim2_ini/,$(dramsim_ini) system.ini)
+
+$(simv): $(sim_vsrcs) $(sim_csrcs) $(testchip_libs) $(ini_files)
 	rm -rf csrc && $(VCS) $(VCS_OPTS) -o $@ \
 	-debug_pp
 
-$(simv_debug) : $(sim_vsrcs) $(sim_csrcs)
+$(simv_debug) : $(sim_vsrcs) $(sim_csrcs) $(testchip_libs) $(ini_files)
 	rm -rf csrc && $(VCS) $(VCS_OPTS) -o $@ \
 	+define+DEBUG -debug_pp
 
 clean:
-	rm -rf csrc simv-* ucli.key vc_hdrs.h
+	rm -rf csrc simv-* ucli.key vc_hdrs.h generated-src
 
 .PHONY: clean
