@@ -6,9 +6,7 @@ import dma.{WithDma, NDmaTrackers}
 import coreplex.{WithL2Cache, WithPLRU}
 import rocketchip.{WithNMemoryChannels, BaseConfig}
 import uncore.agents.NAcquireTransactors
-
-class DefaultExampleConfig extends Config(
-  new WithSerialAdapter ++ new BaseConfig)
+import groundtest.{WithGroundTest, WithMemtest}
 
 class WithOneChannel extends WithNMemoryChannels(1)
 class WithTwoChannels extends WithNMemoryChannels(2)
@@ -36,3 +34,9 @@ class WithNDmaTrackers(n: Int) extends Config(
 
 class DmaConfig extends Config(
   new WithDma ++ new BaselineConfig)
+
+class DefaultExampleConfig extends Config(
+  new WithSerialAdapter ++ new rocketchip.BaseConfig)
+
+class MemtestConfig extends Config(
+  new WithMemtest ++ new WithGroundTest ++ new DefaultExampleConfig)

@@ -26,7 +26,7 @@ class TestHarness(implicit val p: Parameters) extends Module {
   }
 
   ser.io.serial <> dut.io.serial
-  io.success := ser.io.exit
+  io.success := ser.io.exit || dut.io.success
 }
 
 object Generator extends GeneratorApp {
