@@ -7,3 +7,6 @@
 [submodule "dma"]
 	path = dma
 	url = https://github.com/zhemao/riscv-dma2.git
+[submodule "hwacha"]
+	path = hwacha
+	url = git@github.com:ucb-bar/hwacha.git

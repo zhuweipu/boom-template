@@ -7,6 +7,7 @@ import coreplex.{WithL2Cache, WithPLRU}
 import rocketchip.{WithNMemoryChannels, BaseConfig}
 import uncore.agents.NAcquireTransactors
 import groundtest.{WithGroundTest, WithMemtest}
+import hwacha.DefaultHwachaConfig
 
 class WithOneChannel extends WithNMemoryChannels(1)
 class WithTwoChannels extends WithNMemoryChannels(2)
@@ -40,3 +41,6 @@ class DefaultExampleConfig extends Config(
 
 class MemtestConfig extends Config(
   new WithMemtest ++ new WithGroundTest ++ new DefaultExampleConfig)
+
+class HwachaConfig extends Config(
+  new DefaultHwachaConfig ++ new BaselineConfig)
