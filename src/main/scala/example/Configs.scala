@@ -38,8 +38,7 @@ class WithFourAcquireTransactors extends WithNAcquireTransactors(4)
 class WithEightAcquireTransactors extends WithNAcquireTransactors(8)
 
 class BaselineConfig extends Config(
-  new WithPLRU ++ new WithL2Capacity(256) ++
-  new WithL2Cache ++ new DefaultExampleConfig)
+  new WithPLRU ++ new WithL2Cache ++ new DefaultExampleConfig)
 
 class WithNDmaTrackers(n: Int) extends Config(
   (pname, site, here) => pname match {
