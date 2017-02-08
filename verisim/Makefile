@@ -47,7 +47,7 @@ ini_files = $(addprefix $(sim_dir)/dramsim2_ini/,$(dramsim_ini) system.ini)
 $(model_mk): $(sim_vsrcs) $(INSTALLED_VERILATOR)
 	mkdir -p $(build_dir)/$(long_name)
 	$(VERILATOR) $(VERILATOR_FLAGS) -Mdir $(build_dir)/$(long_name) \
-	-o $(sim) $< $(sim_csrcs) -LDFLAGS "$(LDFLAGS)" \
+	-o $(sim_dir)/$(sim) $< $(sim_csrcs) -LDFLAGS "$(LDFLAGS)" \
 	-CFLAGS "-I$(build_dir) $(testchip_includes) -include $(model_header)"
 	touch $@
 
@@ -57,7 +57,7 @@ $(sim): $(model_mk) $(ini_files) $(sim_csrcs)
 $(model_mk_debug): $(sim_vsrcs) $(INSTALLED_VERILATOR)
 	mkdir -p $(build_dir)/$(long_name).debug
 	$(VERILATOR) $(VERILATOR_FLAGS) -Mdir $(build_dir)/$(long_name).debug --trace \
-	-o $(sim_debug) $< $(sim_csrcs) -LDFLAGS "$(LDFLAGS)" \
+	-o $(sim_dir)/$(sim_debug) $< $(sim_csrcs) -LDFLAGS "$(LDFLAGS)" \
 	-CFLAGS "-I$(build_dir) $(testchip_includes) -include $(model_header_debug)"
 	touch $@
 
