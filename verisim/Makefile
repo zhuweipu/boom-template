@@ -7,8 +7,8 @@ CONFIG ?= DefaultExampleConfig
 CFG_PROJECT ?= $(PROJECT)
 TB ?= TestDriver
 
-sim = simulator-$(PROJECT)-$(CONFIG)
-sim_debug = simulator-$(PROJECT)-$(CONFIG)-debug
+sim = $(sim_dir)/simulator-$(PROJECT)-$(CONFIG)
+sim_debug = $(sim_dir)/simulator-$(PROJECT)-$(CONFIG)-debug
 
 default: $(sim)
 

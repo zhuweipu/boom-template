@@ -2,37 +2,52 @@ package pwm
 
 import chisel3._
 import chisel3.util._
-import cde.Parameters
+import cde.{Parameters, Field}
 import uncore.tilelink._
 import junctions._
 import diplomacy._
 import rocketchip._
 
-class PWM(implicit p: Parameters) extends Module {
-  val io = new Bundle {
-    val pwmout = Bool(OUTPUT)
-    val tl = (new ClientUncachedTileLinkIO).flip
-  }
-
-  // How many clock cycles in a PWM cycle?
-  val period = Reg(UInt(width = 64))
-  // For how many cycles should the clock be high?
-  val duty = Reg(UInt(width = 64))
-  // Is the PWM even running at all?
-  val enable = Reg(init = Bool(false))
+class PWMBase extends Module {
+  val io = IO(new Bundle {
+    val pwmout = Output(Bool())
+    val period = Input(UInt(64.W))
+    val duty = Input(UInt(64.W))
+    val enable = Input(Bool())
+  })
 
   // The counter should count up until period is reached
-  val counter = Reg(UInt(width = 64))
+  val counter = Reg(UInt(64.W))
 
-  when (counter >= period) {
-    counter := UInt(0)
+  when (counter >= (io.period - 1.U)) {
+    counter := 0.U
   } .otherwise {
-    counter := counter + UInt(1)
+    counter := counter + 1.U
   }
 
   // If PWM is enabled, pwmout is high when counter < duty
   // If PWM is not enabled, it will always be low
-  io.pwmout := enable && (counter < duty)
+  io.pwmout := io.enable && (counter < io.duty)
+}
+
+class PWMTL(implicit p: Parameters) extends Module {
+  val io = IO(new Bundle {
+    val pwmout = Output(Bool())
+    val tl = Flipped(new ClientUncachedTileLinkIO())
+  })
+
+  // How many clock cycles in a PWM cycle?
+  val period = Reg(UInt(64.W))
+  // For how many cycles should the clock be high?
+  val duty = Reg(UInt(64.W))
+  // Is the PWM even running at all?
+  val enable = Reg(init = false.B)
+
+  val base = Module(new PWMBase)
+  io.pwmout := base.io.pwmout
+  base.io.period := period
+  base.io.duty := duty
+  base.io.enable := enable
 
   // One entry queue to hold the acquire message
   val acq = Queue(io.tl.acquire, 1)
@@ -48,32 +63,92 @@ class PWM(implicit p: Parameters) extends Module {
   // Make sure the acquires we get are only the types we expect
   assert(!acq.valid ||
     acq.bits.isBuiltInType(Acquire.getType) ||
-    acq.bits.isBuiltInType(Acquire.putType),
-    "PWM: unexpected acquire type")
+    acq.bits.isBuiltInType(Acquire.putType))
+
+  // Make sure write masks are full
+  assert(!acq.valid || !acq.bits.hasData() ||
+    acq.bits.wmask() === Acquire.fullWriteMask)
 
   // Base the grant on the stored acquire
   io.tl.grant.valid := acq.valid
   acq.ready := io.tl.grant.ready
   io.tl.grant.bits := Grant(
-    is_builtin_type = Bool(true),
+    is_builtin_type = true.B,
     g_type = acq.bits.getBuiltInGrantType(),
     client_xact_id = acq.bits.client_xact_id,
-    manager_xact_id = UInt(0),
+    manager_xact_id = 0.U,
     addr_beat = acq.bits.addr_beat,
     // For gets, map the index to the three registers
-    data = MuxLookup(index, UInt(0), Seq(
-      UInt(0) -> period,
-      UInt(1) -> duty,
-      UInt(2) -> enable)))
+    data = MuxLookup(index, 0.U, Seq(
+      0.U -> period,
+      1.U -> duty,
+      2.U -> enable)))
 
   // If this is a put, update the registers according to the index
   when (acq.fire() && acq.bits.hasData()) {
     switch (index) {
-      is (UInt(0)) { period := acq.bits.data }
-      is (UInt(1)) { duty   := acq.bits.data }
-      is (UInt(2)) { enable := acq.bits.data(0) }
+      is (0.U) { period := acq.bits.data }
+      is (1.U) { duty   := acq.bits.data }
+      is (2.U) { enable := acq.bits.data(0) }
     }
   }
+}
+
+class PWMAXI(implicit p: Parameters) extends Module {
+  val io = IO(new Bundle {
+    val pwmout = Output(Bool())
+    val axi = Flipped(new NastiIO())
+  })
+
+  // How many clock cycles in a PWM cycle?
+  val period = Reg(UInt(64.W))
+  // For how many cycles should the clock be high?
+  val duty = Reg(UInt(64.W))
+  // Is the PWM even running at all?
+  val enable = Reg(init = false.B)
+
+  val base = Module(new PWMBase)
+  io.pwmout := base.io.pwmout
+  base.io.period := period
+  base.io.duty := duty
+  base.io.enable := enable
+
+  val ar = Queue(io.axi.ar, 1)
+  val aw = Queue(io.axi.aw, 1)
+  val w = Queue(io.axi.w, 1)
+
+  // Start from 3rd bit since 64-bit words
+  // Only need 2 bits, since 3 registers
+  val read_index = ar.bits.addr(4, 3)
+  val write_index = aw.bits.addr(4, 3)
+
+  io.axi.r.valid := ar.valid
+  ar.ready := io.axi.r.ready
+  io.axi.r.bits := NastiReadDataChannel(
+    id = ar.bits.id,
+    data = MuxLookup(read_index, 0.U, Seq(
+      0.U -> period,
+      1.U -> duty,
+      2.U -> enable)))
+
+  io.axi.b.valid := aw.valid && w.valid
+  aw.ready := io.axi.b.ready && w.valid
+  w.ready := io.axi.b.ready && aw.valid
+  io.axi.b.bits := NastiWriteResponseChannel(id = aw.bits.id)
+
+  when (io.axi.b.fire()) {
+    switch (write_index) {
+      is (0.U) { period := w.bits.data }
+      is (1.U) { duty   := w.bits.data }
+      is (2.U) { enable := w.bits.data(0) }
+    }
+  }
+
+  require(io.axi.w.bits.nastiXDataBits == 64)
+
+  assert(!io.axi.ar.valid || (io.axi.ar.bits.len === 0.U && io.axi.ar.bits.size === 3.U))
+  assert(!io.axi.aw.valid || (io.axi.aw.bits.len === 0.U && io.axi.aw.bits.size === 3.U))
+  assert(!io.axi.w.valid || PopCount(io.axi.w.bits.strb) === 8.U)
 }
 
 trait PeripheryPWM extends LazyModule {
@@ -83,15 +158,15 @@ trait PeripheryPWM extends LazyModule {
 }
 
 trait PeripheryPWMBundle {
-  val pwmout = Bool(OUTPUT)
+  val pwmout = Output(Bool())
 }
+
+case object BuildPWM extends Field[(ClientUncachedTileLinkIO, Parameters) => Bool]
 
 trait PeripheryPWMModule extends HasPeripheryParameters {
   implicit val p: Parameters
   val pBus: TileLinkRecursiveInterconnect
   val io: PeripheryPWMBundle
 
-  val pwm = Module(new PWM()(outerMMIOParams))
-  pwm.io.tl <> pBus.port("pwm")
-  io.pwmout := pwm.io.pwmout
+  io.pwmout := p(BuildPWM)(pBus.port("pwm"), outerMMIOParams)
 }

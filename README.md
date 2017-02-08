@@ -71,10 +71,10 @@ for your device.
     package pwm
 
     import chisel3._
-    import cde.Parameters
+    import cde.{Parameters, Field}
     import uncore.tilelink._
 
-    class PWM(implicit p: Parameters) extends Module {
+    class PWMTL(implicit p: Parameters) extends Module {
       val io = new Bundle {
         val tl = new ClientUncachedTileLinkIO().flip
         val pwmout = Bool(OUTPUT)
@@ -131,19 +131,24 @@ For the PWM peripheral, this will just be the `pwmout` pin.
     }
 
 The module implementation trait is where we instantiate our PWM module and
-connect it to the rest of the SoC.
+connect it to the rest of the SoC. 
+
+    case object BuildPWM extends Field[(ClientUncachedTileLinkIO, Parameters) => Bool]
 
     trait PeripheryPWMModule extends HasPeripheryParameters {
       val pBus: TileLinkRecursiveInterconnect
       val io: PeripheryPWMBundle
 
-      val pwm = Module(new PWM()(outerMMIOParams))
-      pwm.io.tl <> pBus.port("pwm")
-      io.pwmout := pwm.io.pwmout
+      io.pwmout := p(BuildPWM)(pBus.port("pwm"), outerMMIOParams)
     }
 
 We just need to connect the MMIO TileLink port to the PWM module's TileLink port
 and connect the PWM module's `pwmout` pin to the `pwmout` pin going off-chip.
+We would like to do this in a configurable way so that we can swap out the
+PWM module if need be. To do this, we create a new Field for the Parameters
+object that produces a function taking in the Tilelink port and returning
+the pwmout as a Bool. We will define this function later in the configuration
+file.
 
 Note that we extend the HasPeripheryParameters trait. This provides us the
 `outerMMIOParams` parameter object, which gets passed in as the `p` parameters
@@ -217,16 +222,57 @@ This defines all the settings in the Parameters object.
 
     import cde.{Parameters, Config, CDEMatchError}
 
-    class PWMConfig extends Config(new example.DefaultExampleConfig)
+    class WithPWMTL extends Config(
+      (pname, site, here) => pname match {
+        case BuildPWM => (port: ClientUncachedTileLinkIO, p: Parameters) => {
+          val pwm = Module(new PWMTL()(p))
+          pwm.io.tl <> port
+          pwm.io.pwmout
+        }
+      })
 
-We aren't really changing anything, so we can just base it off of the
-DefaultExampleConfig.
+    class PWMTLConfig extends Config(new WithPWMTL ++ new example.DefaultExampleConfig)
+
+The only thing we need to add to the DefaultExampleConfig is the definition
+of the BuildPWM field. We just instantiate our PWMTL module, connect the
+TileLink port and pass out the `pwmout` signal.
+
+Now we can test that the PWM is working. The test program is in tests/pwm.c
+
+    #define PWM_PERIOD 0x2000
+    #define PWM_DUTY 0x2008
+    #define PWM_ENABLE 0x2010
+
+    static inline void write_reg(unsigned long addr, unsigned long data)
+    {
+            volatile unsigned long *ptr = (volatile unsigned long *) addr;
+            *ptr = data;
+    }
+
+    static inline unsigned long read_reg(unsigned long addr)
+    {
+            volatile unsigned long *ptr = (volatile unsigned long *) addr;
+            return *ptr;
+    }
+
+    int main(void)
+    {
+            write_reg(PWM_PERIOD, 20);
+            write_reg(PWM_DUTY, 5);
+            write_reg(PWM_ENABLE, 1);
+    }
+
+This just writes out to the registers we defined earlier. The base of the
+module's MMIO region is at 0x2000. This will be printed out in the address
+map portion when you generated the verilog code.
+
+Compiling this program with make produces a `pwm.riscv` executable.
 
 Now with all of that done, we can go ahead and run our simulation.
 
     cd verisim
-    make PROJECT=pwm CONFIG=PWMConfig
-    ./simulator-pwm-PWMConfig ../tests/
+    make PROJECT=pwm CONFIG=PWMTLConfig
+    ./simulator-pwm-PWMTLConfig ../tests/pwm.riscv
 
 ## Adding a DMA port
 
@@ -352,3 +398,24 @@ route custom0 and custom1 instructions to it, we could do the following.
 
     class CustomAcceleratorConfig extends Config(
       new WithCustomAccelerator ++ new BaseConfig)
+
+## Adding a submodule
+
+While developing, you want to include Chisel code in a submodule so that it
+can be shared by different projects. To add a submodule to the project
+template, make sure that your project is organized as follows.
+
+    yourproject/
+        build.sbt
+        src/main/scala/
+            YourFile.scala
+
+Put this in a git repository and make it accessible. Then add it as a submodule
+to the project template.
+
+    git submodule add https://git-repository.com/yourproject.git
+
+Then add `yourproject` to the `EXTRA_PACKAGES` variable in the Makefrag.
+Now your project will be bundled into a jar file alongside the rocket-chip
+and testchipip libraries. You can then import the classes defined in the
+submodule in a new project.
