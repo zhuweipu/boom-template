@@ -1,9 +1,2 @@
-/DVEfiles
-/csrc
-/simv-*
-/output
-/generated-src
-/ucli.key
-/vc_hdrs.h
-*.log
-/dramsim2_ini
+!Makefile
+!.gitignore
