@@ -67,4 +67,16 @@ static inline void dma_resume(void)
 	asm volatile ("custom2 0, 0, 0, 1");
 }
 
+static inline void dma_gather(void *dst, void **src)
+{
+	asm volatile ("custom2 0, %[dst], %[src], 8" ::
+			[dst] "r" (dst), [src] "r" (src));
+}
+
+static inline void dma_scatter(void **dst, void *src)
+{
+	asm volatile ("custom2 0, %[dst], %[src], 9" ::
+			[dst] "r" (dst), [src] "r" (src));
+}
+
 #endif
