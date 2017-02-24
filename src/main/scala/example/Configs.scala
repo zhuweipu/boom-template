@@ -7,6 +7,7 @@ import coreplex.{WithL2Cache, WithPLRU, WithL2Capacity}
 import rocketchip.{WithNMemoryChannels, BaseConfig}
 import uncore.agents.NAcquireTransactors
 import groundtest.{WithGroundTest, WithMemtest}
+import adamacc.WithAdamAcc
 import hwacha._
 
 class WithOneChannel extends WithNMemoryChannels(1)
@@ -72,3 +73,6 @@ class MemtestConfig extends Config(
 
 class HwachaConfig extends Config(
   new DefaultHwachaConfig ++ new BaselineConfig)
+
+class AdamAccConfig extends Config(
+  new WithAdamAcc ++ new BaselineConfig)

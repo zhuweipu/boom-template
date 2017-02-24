@@ -42,7 +42,7 @@ SECTIONS
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
   }
-  .bss : { *(.bss) }
+  .bss ALIGN(0x40) : { *(.bss) }
 
   /* thread-local data segment */
   .tdata :
