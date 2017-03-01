@@ -2,15 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-read_record_t records[4];
-
-uint32_t chromKey[4];
-uint32_t position[4];
-uint32_t matePosition[4];
-sequence_t base[4];
-sequence_t quality[4];
-char duplicate[4];
-
 void checkEqual(uint32_t expected, uint32_t actual)
 {
 	if (expected == actual)
@@ -19,48 +10,42 @@ void checkEqual(uint32_t expected, uint32_t actual)
 	exit(EXIT_FAILURE);
 }
 
+int inputKeys[10] = {43, 5, 24, 77, 56, 265, 122, 104, 91, 145};
+unsigned long inputColumn[10] = {
+	0xffaeL, 0xab35L, 0x8829L, 0xfe32L, 0x5521L,
+	0x56b3L, 0x671cL, 0x44ddL, 0x891aL, 0xbc32L
+};
+int inputIdx[10] = {1, 2, 0, 4, 3, 7, 8, 6, 9, 5};
+
+int dividers[8] = {12, 32, 50, 60, 80, 110, 133, 160};
+
+int outputKeys[10];
+unsigned long outputColumn[10];
+int outputIdx[9] = {0, 1, 2, 3, 4, 5, 7, 8, 9};
+
 int main(void)
 {
-	partition_set_key(0, 1L << 32);
-	partition_set_key(1, 2L << 32);
+	int i;
 
-	partition_set_output_addr(0, records);
-	partition_set_output_addr(1, records + 2);
+	partition_set_columns(1);
+	partition_set_size(0, SIZE_32);
+	partition_set_size(1, SIZE_64);
+	partition_set_input_addr(0, inputKeys);
+	partition_set_input_addr(1, inputColumn);
 
-	partition_set_input_addr(0, chromKey);
-	partition_set_input_addr(1, position);
-	partition_set_input_addr(2, matePosition);
-	partition_set_input_addr(3, base);
-	partition_set_input_addr(4, quality);
-	partition_set_input_addr(5, duplicate);
-
-	chromKey[0] = chromKey[2] = 0;
-	chromKey[1] = chromKey[3] = 1;
-
-	position[0] = 43;
-	position[1] = 61;
-	position[2] = 78;
-	position[3] = 23;
-
-	matePosition[0] = 51;
-	matePosition[1] = 91;
-	matePosition[2] = 25;
-	matePosition[3] = 12;
-
-	duplicate[0] = 1;
-	duplicate[1] = 0;
-	duplicate[2] = 0;
-	duplicate[3] = 0;
-
-	partition_start(4);
+	for (i = 0; i < 8; i++) {
+		partition_set_key(i, dividers[i]);
+	}
+	for (i = 0; i < 9; i++) {
+		partition_set_output_addr(i, 0, &outputKeys[outputIdx[i]]);
+		partition_set_output_addr(i, 1, &outputColumn[outputIdx[i]]);
+	}
+	partition_start(10);
 	asm volatile ("fence");
 
-	for (int i = 0; i < 4; i++) {
-		int j = ((i & 2) >> 1) | ((i & 1) << 1);
-		checkEqual(chromKey[i], records[j].chromKey);
-		checkEqual(position[i], records[j].position);
-		checkEqual(matePosition[i], records[j].matePosition);
-		checkEqual(duplicate[i], records[j].duplicate);
+	for (i = 0; i < 10; i++) {
+		checkEqual(inputKeys[inputIdx[i]], outputKeys[i]);
+		checkEqual(inputColumn[inputIdx[i]], outputColumn[i]);
 	}
 
 	return 0;

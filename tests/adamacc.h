@@ -18,7 +18,15 @@ typedef struct read_record {
 	char padding[RECORD_PADDING];
 } read_record_t;
 
-#define NPARTITIONS 256
+#define NPARTITIONS 9
+#define NCOLUMNS 3
+
+#define SIZE_8 0
+#define SIZE_16 1
+#define SIZE_32 2
+#define SIZE_64 3
+#define SIZE_128 4
+#define SIZE_256 5
 
 static inline void partition_start(unsigned long n)
 {
@@ -31,16 +39,29 @@ static inline void partition_set_key(int idx, unsigned long key)
 			[idx] "r" (idx), [key] "r" (key));
 }
 
-static inline void partition_set_output_addr(int idx, void *addr)
+static inline void partition_set_output_addr(int part, int col, void *addr)
 {
+	int idx = (part + 1) * (1 + NCOLUMNS) + col;
 	asm volatile ("custom3 0, %[idx], %[addr], 2" ::
 			[idx] "r" (idx), [addr] "r" (addr));
 }
 
-static inline void partition_set_input_addr(int idx, void *addr)
+static inline void partition_set_input_addr(int col, void *addr)
 {
-	asm volatile ("custom3 0, %[idx], %[addr], 2" ::
-			[idx] "r" (NPARTITIONS + idx), [addr] "r" (addr));
+	asm volatile ("custom3 0, %[col], %[addr], 2" ::
+			[col] "r" (col), [addr] "r" (addr));
+}
+
+static inline void partition_set_size(int col, unsigned long size)
+{
+	asm volatile ("custom3 0, %[col], %[size], 3" ::
+			[col] "r" (col), [size] "r" (size));
+}
+
+static inline void partition_set_columns(int columns)
+{
+	asm volatile ("custom3 0, %[columns], 0, 4" ::
+			[columns] "r" (columns));
 }
 
 #endif
