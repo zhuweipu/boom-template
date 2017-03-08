@@ -17,15 +17,14 @@ debug: $(simv_debug)
 include $(base_dir)/Makefrag
 
 testchip_dir = $(base_dir)/testchipip
-include $(testchip_dir)/Makefrag
 
 sim_vsrcs = \
 	$(build_dir)/$(PROJECT).$(MODEL).$(CONFIG).v \
 	$(base_dir)/rocket-chip/vsrc/TestDriver.v \
-	$(testchip_vsrcs)
+	$(base_dir)/testchipip/vsrc/SimSerial.v
 
 sim_csrcs = \
-	$(testchip_csrcs)
+	$(base_dir)/testchipip/csrc/SimSerial.cc
 
 VCS = vcs -full64
 

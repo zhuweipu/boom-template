@@ -21,17 +21,16 @@ include $(base_dir)/Makefrag
 include $(sim_dir)/Makefrag-verilator
 
 testchip_dir = $(base_dir)/testchipip
-include $(testchip_dir)/Makefrag
 
 long_name = $(PROJECT).$(MODEL).$(CONFIG)
 
 sim_vsrcs = \
 	$(build_dir)/$(long_name).v \
-	$(testchip_vsrcs)
+	$(base_dir)/testchipip/vsrc/SimSerial.v
 
 sim_csrcs = \
 	$(base_dir)/testchipip/csrc/verilator-harness.cc \
-	$(testchip_csrcs)
+	$(base_dir)/testchipip/csrc/SimSerial.cc
 
 model_dir = $(build_dir)/$(long_name)
 model_dir_debug = $(build_dir)/$(long_name).debug
