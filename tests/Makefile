@@ -3,7 +3,7 @@ CFLAGS=-mcmodel=medany -std=gnu99 -O2 -fno-common -fno-builtin-printf
 LDFLAGS=-static -nostdlib -nostartfiles -lgcc
 OBJDUMP=riscv64-unknown-elf-objdump
 
-PROGRAMS=pwm matrix simple scatter_gather partition
+PROGRAMS=pwm matrix simple scatter_gather partition stitch
 EXECUTABLES=$(addsuffix .riscv,$(PROGRAMS))
 DUMPS=$(addsuffix .dump,$(PROGRAMS))
 

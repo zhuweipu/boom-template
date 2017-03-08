@@ -64,4 +64,34 @@ static inline void partition_set_columns(int columns)
 			[columns] "r" (columns));
 }
 
+static inline void stitch_start(unsigned long n)
+{
+	asm volatile("custom3 0, %0, 0, 8" :: "r" (n));
+}
+
+static inline void stitch_set_input_addr(int col, void *addr)
+{
+	asm volatile ("custom3 0, %[col], %[addr], 9" ::
+			[col] "r" (col), [addr] "r" (addr));
+}
+
+static inline void stitch_set_output_addr(void *addr)
+{
+	int idx = NCOLUMNS;
+	asm volatile ("custom3 0, %[idx], %[addr], 9" ::
+			[idx] "r" (idx), [addr] "r" (addr));
+}
+
+static inline void stitch_set_size(int col, unsigned long size)
+{
+	asm volatile ("custom3 0, %[col], %[size], 10" ::
+			[col] "r" (col), [size] "r" (size));
+}
+
+static inline void stitch_set_columns(int columns)
+{
+	asm volatile ("custom3 0, %[columns], 0, 11" ::
+			[columns] "r" (columns));
+}
+
 #endif
