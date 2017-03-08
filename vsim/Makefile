@@ -51,13 +51,11 @@ VCS_OPTS = -notice -line +lint=all,noVCDE,noONGS,noUI -error=PCWM-L -timescale=1
 
 verilog: $(sim_vsrcs)
 
-ini_files = $(addprefix $(sim_dir)/dramsim2_ini/,$(dramsim_ini) system.ini)
-
-$(simv): $(sim_vsrcs) $(sim_csrcs) $(testchip_libs) $(ini_files)
+$(simv): $(sim_vsrcs) $(sim_csrcs) $(testchip_libs)
 	rm -rf csrc && $(VCS) $(VCS_OPTS) -o $@ \
 	-debug_pp
 
-$(simv_debug) : $(sim_vsrcs) $(sim_csrcs) $(testchip_libs) $(ini_files)
+$(simv_debug) : $(sim_vsrcs) $(sim_csrcs) $(testchip_libs)
 	rm -rf csrc && $(VCS) $(VCS_OPTS) -o $@ \
 	+define+DEBUG -debug_pp
 
