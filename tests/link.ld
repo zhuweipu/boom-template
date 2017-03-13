@@ -29,7 +29,7 @@ SECTIONS
   .text : { *(.text) }
 
   /* data segment */
-  .data ALIGN(0x10) : { *(.data) }
+  .data ALIGN(0x40) : { *(.data) }
 
   .sdata : {
     _gp = . + 0x800;
@@ -42,7 +42,7 @@ SECTIONS
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
   }
-  .bss ALIGN(0x10) : { *(.bss) }
+  .bss ALIGN(0x40) : { *(.bss) }
 
   /* thread-local data segment */
   .tdata :
