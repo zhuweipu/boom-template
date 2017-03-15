@@ -31,8 +31,8 @@ typedef struct read_record {
 #define ADDR_CONSENSUS 0
 #define ADDR_READ 1
 #define ADDR_QUAL 2
-#define ADDR_SCORE 3
-#define ADDR_POS 4
+#define ADDR_POS 3
+#define ADDR_SWAP 4
 
 static inline void partition_start(unsigned long n)
 {
@@ -98,6 +98,11 @@ static inline void stitch_set_columns(int columns)
 {
 	asm volatile ("custom3 0, %[columns], 0, 11" ::
 			[columns] "r" (columns));
+}
+
+static inline void ir_set_target(unsigned int target)
+{
+	asm volatile ("custom3 0, %[target], 0, 18" :: [target] "r" (target));
 }
 
 static inline void ir_set_addr(int idx, void *addr)
