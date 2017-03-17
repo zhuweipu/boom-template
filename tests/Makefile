@@ -4,7 +4,7 @@ LDFLAGS=-static -nostdlib -nostartfiles -lgcc
 OBJDUMP=riscv64-unknown-elf-objdump
 PYTHON=python
 
-PROGRAMS=pwm matrix simple scatter_gather partition stitch ir
+PROGRAMS=pwm matrix simple scatter_gather partition stitch ir braid concat
 EXECUTABLES=$(addsuffix .riscv,$(PROGRAMS))
 DUMPS=$(addsuffix .dump,$(PROGRAMS))
 
@@ -15,10 +15,10 @@ dumps: $(DUMPS)
 %.o: %.S
 	$(GCC) $(CFLAGS) -D__ASSEMBLY__=1 -c $< -o $@
 
-%.o: %.c
+%.o: %.c adamacc.h
 	$(GCC) $(CFLAGS) -c $< -o $@
 
-ir.o: ir.c ir-dataset.h
+ir.o: ir.c ir-dataset.h adamacc.h
 	$(GCC) $(CFLAGS) -c $< -o $@
 
 ir-dataset.h: ir-datagen.py

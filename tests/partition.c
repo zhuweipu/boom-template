@@ -60,6 +60,14 @@ int main(void)
 	partition_start(10);
 	asm volatile ("fence");
 
+	for (i = 0; i < 9; i++) {
+		int actual, nextIdx, thisIdx;
+		thisIdx = outputIdx[i];
+		nextIdx = (i == 8) ? 10 : outputIdx[i+1];
+		actual = partition_get_count(i);
+		checkEqualInt(nextIdx - thisIdx, actual);
+	}
+
 	for (i = 0; i < 10; i++) {
 		checkEqualInt(inputKeys[inputIdx[i]], outputKeys[i]);
 		checkEqualLong(inputColumn[2 * inputIdx[i]], outputColumn[2 * i]);

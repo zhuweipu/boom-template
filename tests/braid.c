@@ -2,14 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+unsigned char inputSelect[8] = { 0, 1, 0, 1, 0, 1, 0, 1 };
 unsigned char inputData[16] = {
 	0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
 	0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
 };
-unsigned short expectedData[8] = {
-	0x8800, 0x9911, 0xaa22, 0xbb33, 0xcc44, 0xdd55, 0xee66, 0xff77
+unsigned char expectedData[8] = {
+	0x00, 0x99, 0x22, 0xbb, 0x44, 0xdd, 0x66, 0xff
 };
-unsigned short outputData[8];
+unsigned char outputData[8];
 
 void checkEqualInt(int expected, int actual)
 {
@@ -21,12 +22,11 @@ void checkEqualInt(int expected, int actual)
 
 int main(void)
 {
-	stitch_set_input_addr(0, inputData);
-	stitch_set_input_addr(1, inputData + 8);
-	stitch_set_output_addr(outputData);
-	stitch_set_size(0, SIZE_8);
-	stitch_set_size(1, SIZE_8);
-	stitch_start(8, 2);
+	braid_set_select_addr(inputSelect);
+	braid_set_input_addr(0, inputData);
+	braid_set_input_addr(1, inputData + 8);
+	braid_set_output_addr(outputData);
+	braid_start(8, SIZE_8);
 	asm volatile ("fence");
 
 	for (int i = 0; i < 8; i++) {

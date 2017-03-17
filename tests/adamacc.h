@@ -18,8 +18,10 @@ typedef struct read_record {
 	char padding[RECORD_PADDING];
 } read_record_t;
 
-#define NPARTITIONS 9
-#define NCOLUMNS 3
+#define NPARTITIONS 64
+#define NPARTCOLUMNS 3
+#define NSTITCHCOLUMNS 3
+#define NBRAIDCOLUMNS 2
 
 #define SIZE_8 0
 #define SIZE_16 1
@@ -47,7 +49,7 @@ static inline void partition_set_key(int idx, unsigned long key)
 
 static inline void partition_set_output_addr(int part, int col, void *addr)
 {
-	int idx = (part + 1) * (1 + NCOLUMNS) + col;
+	int idx = (part + 1) * (1 + NPARTCOLUMNS) + col;
 	asm volatile ("custom3 0, %[idx], %[addr], 2" ::
 			[idx] "r" (idx), [addr] "r" (addr));
 }
@@ -70,9 +72,19 @@ static inline void partition_set_columns(int columns)
 			[columns] "r" (columns));
 }
 
-static inline void stitch_start(unsigned long n)
+static inline unsigned long partition_get_count(int part)
 {
-	asm volatile("custom3 0, %0, 0, 8" :: "r" (n));
+	unsigned long count;
+	asm volatile ("custom3 %[count], %[part], 0, 5" :
+			[count] "=r" (count) :
+			[part] "r" (part));
+	return count;
+}
+
+static inline void stitch_start(unsigned long ninput, unsigned long ncolumns)
+{
+	asm volatile("custom3 0, %[ninput], %[ncolumns], 8" ::
+			[ninput] "r" (ninput), [ncolumns] "r" (ncolumns));
 }
 
 static inline void stitch_set_input_addr(int col, void *addr)
@@ -83,7 +95,7 @@ static inline void stitch_set_input_addr(int col, void *addr)
 
 static inline void stitch_set_output_addr(void *addr)
 {
-	int idx = NCOLUMNS;
+	int idx = NSTITCHCOLUMNS;
 	asm volatile ("custom3 0, %[idx], %[addr], 9" ::
 			[idx] "r" (idx), [addr] "r" (addr));
 }
@@ -92,12 +104,6 @@ static inline void stitch_set_size(int col, unsigned long size)
 {
 	asm volatile ("custom3 0, %[col], %[size], 10" ::
 			[col] "r" (col), [size] "r" (size));
-}
-
-static inline void stitch_set_columns(int columns)
-{
-	asm volatile ("custom3 0, %[columns], 0, 11" ::
-			[columns] "r" (columns));
 }
 
 static inline void ir_set_target(unsigned int target)
@@ -115,6 +121,54 @@ static inline void ir_start(unsigned long consLen, unsigned long readLen)
 {
 	asm volatile ("custom3 0, %[consLen], %[readLen], 16" ::
 			[consLen] "r" (consLen), [readLen] "r" (readLen));
+}
+
+static inline void braid_set_select_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 25" ::
+			[idx] "r" (0), [addr] "r" (addr));
+}
+
+static inline void braid_set_input_addr(int column, void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 25" ::
+			[idx] "r" (1 + column), [addr] "r" (addr));
+}
+
+static inline void braid_set_output_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 25" ::
+			[idx] "r" (1 + NBRAIDCOLUMNS), [addr] "r" (addr));
+}
+
+static inline void braid_start(int len, int size)
+{
+	asm volatile ("custom3 0, %[len], %[size], 24" ::
+			[len] "r" (len), [size] "r" (size));
+}
+
+static inline void concat_set_output_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 33" ::
+			[idx] "r" (0), [addr] "r" (addr));
+}
+
+static inline void concat_set_input_addr(int idx, void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 33" ::
+			[idx] "r" (idx + 1), [addr] "r" (addr));
+}
+
+static inline void concat_set_len(int idx, unsigned long len)
+{
+	asm volatile ("custom3 0, %[idx], %[len], 34" ::
+			[idx] "r" (idx), [len] "r" (len));
+}
+
+static inline void concat_start(int npieces, int size)
+{
+	asm volatile ("custom3 0, %[npieces], %[size], 32" ::
+			[npieces] "r" (npieces), [size] "r" (size));
 }
 
 #endif
