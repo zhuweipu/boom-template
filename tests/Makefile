@@ -4,7 +4,7 @@ LDFLAGS=-static -nostdlib -nostartfiles -lgcc
 OBJDUMP=riscv64-unknown-elf-objdump
 PYTHON=python
 
-PROGRAMS=pwm matrix simple scatter_gather partition stitch ir braid concat
+PROGRAMS=partition stitch ir braid concat split
 EXECUTABLES=$(addsuffix .riscv,$(PROGRAMS))
 DUMPS=$(addsuffix .dump,$(PROGRAMS))
 

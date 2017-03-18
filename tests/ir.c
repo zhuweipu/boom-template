@@ -20,7 +20,8 @@ int main(void)
 	ir_set_addr(ADDR_POS, positions);
 	ir_set_addr(ADDR_SWAP, swaps);
 	ir_set_target(refTarget);
-	ir_start(NCONSENSUS, NREADS);
+	ir_set_len(NCONSENSUS, NREADS);
+	ir_start(0);
 	asm volatile ("fence");
 
 	for (int i = 0; i < NREADS; i++) {

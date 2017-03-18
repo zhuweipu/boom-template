@@ -57,14 +57,14 @@ int main(void)
 		partition_set_output_addr(i, 0, &outputKeys[outputIdx[i]]);
 		partition_set_output_addr(i, 1, &outputColumn[2 * outputIdx[i]]);
 	}
-	partition_start(10);
+	partition_start(0, 10);
 	asm volatile ("fence");
 
 	for (i = 0; i < 9; i++) {
 		int actual, nextIdx, thisIdx;
 		thisIdx = outputIdx[i];
 		nextIdx = (i == 8) ? 10 : outputIdx[i+1];
-		actual = partition_get_count(i);
+		actual = partition_get_count(0, i);
 		checkEqualInt(nextIdx - thisIdx, actual);
 	}
 
