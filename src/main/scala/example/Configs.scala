@@ -4,8 +4,8 @@ import cde.{Parameters, Config, CDEMatchError}
 import testchipip.WithSerialAdapter
 import dma._
 import coreplex.{WithL2Cache, WithPLRU, WithL2Capacity}
-import rocketchip.{WithNMemoryChannels, BaseConfig, EdgeDataBits}
-import uncore.agents.{NAcquireTransactors, CacheBlockBytes}
+import rocketchip.{WithNMemoryChannels, BaseConfig}
+import uncore.agents.NAcquireTransactors
 import groundtest.{WithGroundTest, WithMemtest}
 import adamacc.WithAdamAcc
 import hwacha._
@@ -76,22 +76,3 @@ class HwachaConfig extends Config(
 
 class AdamAccConfig extends Config(
   new WithAdamAcc ++ new BaselineConfig)
-
-class WithBigMemIF extends Config(
-  (pname, site, here) => pname match {
-    case CacheBlockBytes => 128
-    case EdgeDataBits => 512
-    case _ => throw new CDEMatchError
-  },
-  knobValues = {
-    case "L1D_SETS" => 32
-    case "L1I_SETS" => 32
-    case "L2_CAPACITY_IN_KB" => 16
-    case _ => throw new CDEMatchError
-  })
-
-class BigMemConfig extends Config(
-  new WithBigMemIF ++ new BaselineConfig)
-
-class AdamAccBigMemConfig extends Config(
-  new WithAdamAcc ++ new BigMemConfig)
