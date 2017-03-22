@@ -83,26 +83,26 @@ static inline unsigned long partition_get_count(int id, int part)
 	return count;
 }
 
-static inline void stitch_start(unsigned long ninput, unsigned long ncolumns)
+static inline void concat_start(unsigned long ninput, unsigned long ncolumns)
 {
 	asm volatile("custom3 0, %[ninput], %[ncolumns], 8" ::
 			[ninput] "r" (ninput), [ncolumns] "r" (ncolumns));
 }
 
-static inline void stitch_set_input_addr(int col, void *addr)
+static inline void concat_set_input_addr(int col, void *addr)
 {
 	asm volatile ("custom3 0, %[col], %[addr], 9" ::
 			[col] "r" (col), [addr] "r" (addr));
 }
 
-static inline void stitch_set_output_addr(void *addr)
+static inline void concat_set_output_addr(void *addr)
 {
 	int idx = NSTITCHCOLUMNS;
 	asm volatile ("custom3 0, %[idx], %[addr], 9" ::
 			[idx] "r" (idx), [addr] "r" (addr));
 }
 
-static inline void stitch_set_size(int col, int size)
+static inline void concat_set_size(int col, int size)
 {
 	asm volatile ("custom3 0, %[col], %[size], 10" ::
 			[col] "r" (col), [size] "r" (size));
@@ -130,49 +130,49 @@ static inline void ir_start(int id)
 	asm volatile ("custom3 0, %[id], 0, 16" :: [id] "r" (id));
 }
 
-static inline void braid_set_select_addr(void *addr)
+static inline void cond_update_set_select_addr(void *addr)
 {
 	asm volatile ("custom3 0, %[idx], %[addr], 25" ::
 			[idx] "r" (0), [addr] "r" (addr));
 }
 
-static inline void braid_set_input_addr(int column, void *addr)
+static inline void cond_update_set_input_addr(int column, void *addr)
 {
 	asm volatile ("custom3 0, %[idx], %[addr], 25" ::
 			[idx] "r" (1 + column), [addr] "r" (addr));
 }
 
-static inline void braid_set_output_addr(void *addr)
+static inline void cond_update_set_output_addr(void *addr)
 {
 	asm volatile ("custom3 0, %[idx], %[addr], 25" ::
 			[idx] "r" (1 + NBRAIDCOLUMNS), [addr] "r" (addr));
 }
 
-static inline void braid_start(int len, int size)
+static inline void cond_update_start(int len, int size)
 {
 	asm volatile ("custom3 0, %[len], %[size], 24" ::
 			[len] "r" (len), [size] "r" (size));
 }
 
-static inline void concat_set_output_addr(void *addr)
+static inline void append_set_output_addr(void *addr)
 {
 	asm volatile ("custom3 0, %[idx], %[addr], 33" ::
 			[idx] "r" (0), [addr] "r" (addr));
 }
 
-static inline void concat_set_input_addr(int idx, void *addr)
+static inline void append_set_input_addr(int idx, void *addr)
 {
 	asm volatile ("custom3 0, %[idx], %[addr], 33" ::
 			[idx] "r" (idx + 1), [addr] "r" (addr));
 }
 
-static inline void concat_set_len(int idx, unsigned long len)
+static inline void append_set_len(int idx, unsigned long len)
 {
 	asm volatile ("custom3 0, %[idx], %[len], 34" ::
 			[idx] "r" (idx), [len] "r" (len));
 }
 
-static inline void concat_start(int npieces, int size)
+static inline void append_start(int npieces, int size)
 {
 	asm volatile ("custom3 0, %[npieces], %[size], 32" ::
 			[npieces] "r" (npieces), [size] "r" (size));

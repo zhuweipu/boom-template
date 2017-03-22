@@ -2,24 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int inputData[16] = {
-	0xab, 0xdd, 0x24, 0x83, 0x23, 0x18, 0x91, 0x25,
-	0xee, 0xf2, 0x56, 0xa2, 0xf2, 0xaa, 0x21, 0x92
+unsigned char inputData[16] = {
+	0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+	0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
 };
-
-int expectedData[8] = {
-	0xab, 0x24, 0x83, 0x91, 0xee, 0xf2, 0x21, 0x92
+unsigned short expectedData[8] = {
+	0x8800, 0x9911, 0xaa22, 0xbb33, 0xcc44, 0xdd55, 0xee66, 0xff77
 };
-
-unsigned long chunks[5][2] = {
-	{0, 1},
-	{2, 2},
-	{6, 1},
-	{8, 2},
-	{14, 2}
-};
-
-int outputData[8];
+unsigned short outputData[8];
 
 void checkEqualInt(int expected, int actual)
 {
@@ -31,12 +21,12 @@ void checkEqualInt(int expected, int actual)
 
 int main(void)
 {
+	concat_set_input_addr(0, inputData);
+	concat_set_input_addr(1, inputData + 8);
 	concat_set_output_addr(outputData);
-	for (int i = 0; i < 5; i++) {
-		concat_set_input_addr(i, inputData + chunks[i][0]);
-		concat_set_len(i, chunks[i][1]);
-	}
-	concat_start(5, SIZE_32);
+	concat_set_size(0, SIZE_8);
+	concat_set_size(1, SIZE_8);
+	concat_start(8, 2);
 	asm volatile ("fence");
 
 	for (int i = 0; i < 8; i++) {

@@ -4,7 +4,7 @@ LDFLAGS=-static -nostdlib -nostartfiles -lgcc
 OBJDUMP=riscv64-unknown-elf-objdump
 PYTHON=python
 
-PROGRAMS=partition stitch ir braid concat split
+PROGRAMS=partition concat ir cond-update append split
 EXECUTABLES=$(addsuffix .riscv,$(PROGRAMS))
 DUMPS=$(addsuffix .dump,$(PROGRAMS))
 
