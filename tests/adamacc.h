@@ -36,6 +36,12 @@ typedef struct read_record {
 #define ADDR_POS 3
 #define ADDR_SWAP 4
 
+#define CMP_OP_EQUAL 0
+#define CMP_OP_LESS 1
+#define CMP_OP_LTE 2
+#define CMP_OP_GREATER 3
+#define CMP_OP_GTE 4
+
 static inline void partition_start(int id, unsigned long n)
 {
 	asm volatile ("custom3 0, %[id], %[n], 0" ::
@@ -212,6 +218,61 @@ static inline void split_start(unsigned long len, int columns)
 {
 	asm volatile ("custom3 0, %[len], %[columns], 40" ::
 			[len] "r" (len), [columns] "r" (columns));
+}
+
+static inline void boolgen_start(int id, unsigned long len)
+{
+	asm volatile ("custom3 0, %[id], %[len], 56" ::
+			[id] "r" (id), [len] "r" (len));
+}
+
+static inline void boolgen_set_addrs(void *inAddr, void *outAddr)
+{
+	asm volatile ("custom3 0, %[inAddr], %[outAddr], 57" ::
+			[inAddr] "r" (inAddr), [outAddr] "r" (outAddr));
+}
+
+static inline void boolgen_set_size(int size)
+{
+	asm volatile ("custom3 0, %[size], 0, 58" :: [size] "r" (size));
+}
+
+static inline void boolgen_set_op(int typ, unsigned long value)
+{
+	asm volatile ("custom3 0, %[typ], %[value], 59" ::
+			[typ] "r" (typ), [value] "r" (value));
+}
+
+static inline unsigned long filter_start(int id, unsigned long len)
+{
+	unsigned long count;
+	asm volatile ("custom3 %[count], %[id], %[len], 64" :
+			[count] "=r" (count) :
+			[id] "r" (id), [len] "r" (len));
+	return count;
+}
+
+static inline void filter_set_input_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 65" ::
+			[idx] "r" (0), [addr] "r" (addr));
+}
+
+static inline void filter_set_select_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 65" ::
+			[idx] "r" (1), [addr] "r" (addr));
+}
+
+static inline void filter_set_output_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 65" ::
+			[idx] "r" (2), [addr] "r" (addr));
+}
+
+static inline void filter_set_size(int size)
+{
+	asm volatile ("custom3 0, %[size], 0, 66" :: [size] "r" (size));
 }
 
 #endif

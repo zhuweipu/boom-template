@@ -4,7 +4,7 @@ LDFLAGS=-static -nostdlib -nostartfiles -lgcc
 OBJDUMP=riscv64-unknown-elf-objdump
 PYTHON=python
 
-PROGRAMS=partition concat ir cond-update append split
+PROGRAMS=partition concat ir cond-update append split boolgen filter
 EXECUTABLES=$(addsuffix .riscv,$(PROGRAMS))
 DUMPS=$(addsuffix .dump,$(PROGRAMS))
 
