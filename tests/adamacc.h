@@ -22,6 +22,8 @@ typedef struct read_record {
 #define NPARTCOLUMNS 3
 #define NSTITCHCOLUMNS 3
 #define NBRAIDCOLUMNS 2
+#define NSORTKEYS 2
+#define NSORTCOLUMNS 5
 
 #define SIZE_8 0
 #define SIZE_16 1
@@ -41,6 +43,10 @@ typedef struct read_record {
 #define CMP_OP_LTE 2
 #define CMP_OP_GREATER 3
 #define CMP_OP_GTE 4
+
+#define REDUCE_SUM 0
+#define REDUCE_MIN 1
+#define REDUCE_MAX 2
 
 static inline void partition_start(int id, unsigned long n)
 {
@@ -220,6 +226,55 @@ static inline void split_start(unsigned long len, int columns)
 			[len] "r" (len), [columns] "r" (columns));
 }
 
+static inline void sort_start(int id, unsigned long len)
+{
+	asm volatile ("custom3 0, %[id], %[len], 48" ::
+			[id] "r" (id), [len] "r" (len));
+}
+
+static inline void sort_set_input_key_addr(int idx, void* addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 49" ::
+			[idx] "r" (idx), [addr] "r" (addr));
+}
+
+static inline void sort_set_input_payload_addr(int idx, void* addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 49" ::
+			[idx] "r" (NSORTKEYS + idx), [addr] "r" (addr));
+}
+
+static inline void sort_set_output_key_addr(int idx, void* addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 49" ::
+			[idx] "r" (NSORTCOLUMNS + idx), [addr] "r" (addr));
+}
+
+static inline void sort_set_output_payload_addr(int idx, void* addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 49" ::
+			[idx] "r" (NSORTCOLUMNS + NSORTKEYS + idx),
+			[addr] "r" (addr));
+}
+
+static inline void sort_set_key_size(int idx, int size)
+{
+	asm volatile ("custom3 0, %[idx], %[size], 50" ::
+			[idx] "r" (idx), [size] "r" (size));
+}
+
+static inline void sort_set_payload_size(int idx, int size)
+{
+	asm volatile ("custom3 0, %[idx], %[size], 50" ::
+			[idx] "r" (NSORTKEYS + idx), [size] "r" (size));
+}
+
+static inline void sort_set_columns(int nkeys, int npayload)
+{
+	asm volatile ("custom3 0, %[nkeys], %[npayload], 51" ::
+			[nkeys] "r" (nkeys), [npayload] "r" (npayload));
+}
+
 static inline void boolgen_start(int id, unsigned long len)
 {
 	asm volatile ("custom3 0, %[id], %[len], 56" ::
@@ -273,6 +328,35 @@ static inline void filter_set_output_addr(void *addr)
 static inline void filter_set_size(int size)
 {
 	asm volatile ("custom3 0, %[size], 0, 66" :: [size] "r" (size));
+}
+
+static inline void reduce_start(int id, unsigned long len)
+{
+	asm volatile ("custom3 0, %[id], %[len], 72" ::
+			[id] "r" (id), [len] "r" (len));
+}
+
+static inline void reduce_set_addr(void *inAddr, void *outAddr)
+{
+	asm volatile ("custom3 0, %[inAddr], %[outAddr], 73" ::
+			[inAddr] "r" (inAddr), [outAddr] "r" (outAddr));
+}
+
+static inline void reduce_set_size(int inSize, int outSize)
+{
+	asm volatile ("custom3 0, %[inSize], %[outSize], 74" ::
+			[inSize] "r" (inSize), [outSize] "r" (outSize));
+}
+
+static inline void reduce_set_comparator(int op, int value)
+{
+	asm volatile ("custom3 0, %[op], %[value], 75" ::
+			[op] "r" (op), [value] "r" (value));
+}
+
+static inline void reduce_set_operation(int op)
+{
+	asm volatile ("custom3 0, %[op], 0, 76" :: [op] "r" (op));
 }
 
 #endif
