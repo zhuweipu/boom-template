@@ -49,6 +49,9 @@ typedef struct read_record {
 #define REDUCE_MIN 1
 #define REDUCE_MAX 2
 
+#define LOGALU_AND 0
+#define LOGALU_OR 1
+
 static inline void partition_start(int id, unsigned long n)
 {
 	asm volatile ("custom3 0, %[id], %[n], 0" ::
@@ -439,6 +442,24 @@ static inline unsigned long aggregate_get_count(int id)
 			[count] "=r" (count) :
 			[id] "r" (id));
 	return count;
+}
+
+static inline void logalu_start(int id, unsigned long len)
+{
+	asm volatile ("custom3 0, %[id], %[len], 88" ::
+			[id] "r" (id), [len] "r" (len));
+}
+
+static inline void logalu_set_input(void *addr1, void *addr2)
+{
+	asm volatile ("custom3 0, %[addr1], %[addr2], 89" ::
+			[addr1] "r" (addr1), [addr2] "r" (addr2));
+}
+
+static inline void logalu_set_output(int op, void *addr)
+{
+	asm volatile ("custom3 0, %[op], %[addr], 90" ::
+			[op] "r" (op), [addr] "r" (addr));
 }
 
 #endif
