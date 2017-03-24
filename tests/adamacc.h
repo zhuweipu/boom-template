@@ -99,29 +99,34 @@ static inline unsigned long partition_get_count(int id, int part)
 	return count;
 }
 
-static inline void concat_start(unsigned long ninput, unsigned long ncolumns)
+static inline void concat_start(int id, unsigned long ninput)
 {
-	asm volatile("custom3 0, %[ninput], %[ncolumns], 8" ::
-			[ninput] "r" (ninput), [ncolumns] "r" (ncolumns));
+	asm volatile("custom3 0, %[id], %[ninput], 8" ::
+			[id] "r" (id), [ninput] "r" (ninput));
 }
 
 static inline void concat_set_input_addr(int col, void *addr)
 {
-	asm volatile ("custom3 0, %[col], %[addr], 9" ::
-			[col] "r" (col), [addr] "r" (addr));
+	asm volatile ("custom3 0, %[idx], %[addr], 9" ::
+			[idx] "r" (col + 1), [addr] "r" (addr));
 }
 
 static inline void concat_set_output_addr(void *addr)
 {
-	int idx = NSTITCHCOLUMNS;
 	asm volatile ("custom3 0, %[idx], %[addr], 9" ::
-			[idx] "r" (idx), [addr] "r" (addr));
+			[idx] "r" (0), [addr] "r" (addr));
 }
 
 static inline void concat_set_size(int col, int size)
 {
 	asm volatile ("custom3 0, %[col], %[size], 10" ::
 			[col] "r" (col), [size] "r" (size));
+}
+
+static inline void concat_set_ncolumns(unsigned long ncolumns)
+{
+	asm volatile ("custom3 0, %[ncolumns], 0, 11" ::
+			[ncolumns] "r" (ncolumns));
 }
 
 static inline void ir_set_target(unsigned int target)
@@ -164,10 +169,20 @@ static inline void cond_update_set_output_addr(void *addr)
 			[idx] "r" (1 + NBRAIDCOLUMNS), [addr] "r" (addr));
 }
 
-static inline void cond_update_start(int len, int size)
+static inline void cond_update_set_size(int size)
 {
-	asm volatile ("custom3 0, %[len], %[size], 24" ::
-			[len] "r" (len), [size] "r" (size));
+	asm volatile ("custom3 0, %[size], 0, 26" :: [size] "r" (size));
+}
+
+static inline void cond_update_start(int idx, unsigned long len)
+{
+	asm volatile ("custom3 0, %[idx], %[len], 24" ::
+			[idx] "r" (idx), [len] "r" (len));
+}
+
+static inline void append_start(int id)
+{
+	asm volatile ("custom3 0, %[id], 0, 32" :: [id] "r" (id));
 }
 
 static inline void append_set_output_addr(void *addr)
@@ -188,11 +203,12 @@ static inline void append_set_len(int idx, unsigned long len)
 			[idx] "r" (idx), [len] "r" (len));
 }
 
-static inline void append_start(int npieces, int size)
+static inline void append_set_options(int npieces, int size)
 {
-	asm volatile ("custom3 0, %[npieces], %[size], 32" ::
+	asm volatile ("custom3 0, %[npieces], %[size], 35" ::
 			[npieces] "r" (npieces), [size] "r" (size));
 }
+
 
 static inline void split_set_input_addr(void *addr)
 {
@@ -224,10 +240,16 @@ static inline void split_set_offset(int col, int offset)
 			[col] "r" (col), [offset] "r" (offset));
 }
 
-static inline void split_start(unsigned long len, int columns)
+static inline void split_set_ncolumns(int ncolumns)
 {
-	asm volatile ("custom3 0, %[len], %[columns], 40" ::
-			[len] "r" (len), [columns] "r" (columns));
+	asm volatile ("custom3 0, %[ncolumns], 0, 44" ::
+			[ncolumns] "r" (ncolumns));
+}
+
+static inline void split_start(int id, unsigned long len)
+{
+	asm volatile ("custom3 0, %[id], %[len], 40" ::
+			[id] "r" (id), [len] "r" (len));
 }
 
 static inline void sort_start(int id, unsigned long len)

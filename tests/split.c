@@ -29,7 +29,8 @@ int main(void)
 	split_set_output_size(1, SIZE_8);
 	split_set_offset(0, 0);
 	split_set_offset(1, 1);
-	split_start(8, 2);
+	split_set_ncolumns(2);
+	split_start(0, 8);
 	asm volatile ("fence");
 
 	for (int i = 0; i < 16; i++) {

@@ -36,7 +36,8 @@ int main(void)
 		append_set_input_addr(i, inputData + chunks[i][0]);
 		append_set_len(i, chunks[i][1]);
 	}
-	append_start(5, SIZE_32);
+	append_set_options(5, SIZE_32);
+	append_start(0);
 	asm volatile ("fence");
 
 	for (int i = 0; i < 8; i++) {

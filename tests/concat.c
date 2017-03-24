@@ -26,7 +26,8 @@ int main(void)
 	concat_set_output_addr(outputData);
 	concat_set_size(0, SIZE_8);
 	concat_set_size(1, SIZE_8);
-	concat_start(8, 2);
+	concat_set_ncolumns(2);
+	concat_start(0, 8);
 	asm volatile ("fence");
 
 	for (int i = 0; i < 8; i++) {

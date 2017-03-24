@@ -26,7 +26,8 @@ int main(void)
 	cond_update_set_input_addr(0, inputData);
 	cond_update_set_input_addr(1, inputData + 8);
 	cond_update_set_output_addr(outputData);
-	cond_update_start(8, SIZE_8);
+	cond_update_set_size(SIZE_8);
+	cond_update_start(0, 8);
 	asm volatile ("fence");
 
 	for (int i = 0; i < 8; i++) {
