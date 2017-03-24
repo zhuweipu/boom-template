@@ -4,7 +4,8 @@ LDFLAGS=-static -nostdlib -nostartfiles -lgcc
 OBJDUMP=riscv64-unknown-elf-objdump
 PYTHON=python
 
-PROGRAMS=partition concat ir cond-update append split boolgen filter sort colreduce
+PROGRAMS=partition concat ir cond-update append split boolgen filter \
+	sort colreduce aggregate
 EXECUTABLES=$(addsuffix .riscv,$(PROGRAMS))
 DUMPS=$(addsuffix .dump,$(PROGRAMS))
 

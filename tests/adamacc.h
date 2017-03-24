@@ -24,6 +24,7 @@ typedef struct read_record {
 #define NBRAIDCOLUMNS 2
 #define NSORTKEYS 2
 #define NSORTCOLUMNS 5
+#define NAGGAUX 1
 
 #define SIZE_8 0
 #define SIZE_16 1
@@ -357,6 +358,87 @@ static inline void reduce_set_comparator(int op, int value)
 static inline void reduce_set_operation(int op)
 {
 	asm volatile ("custom3 0, %[op], 0, 76" :: [op] "r" (op));
+}
+
+static inline void aggregate_start(int id, unsigned long len)
+{
+	asm volatile ("custom3 0, %[id], %[len], 80" ::
+			[id] "r" (id), [len] "r" (len));
+}
+
+static inline void aggregate_set_input_group_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 81" ::
+			[idx] "r" (0), [addr] "r" (addr));
+}
+
+static inline void aggregate_set_input_key_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 81" ::
+			[idx] "r" (1), [addr] "r" (addr));
+}
+
+static inline void aggregate_set_select_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 81" ::
+			[idx] "r" (2), [addr] "r" (addr));
+}
+
+static inline void aggregate_set_input_aux_addr(int idx, void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 81" ::
+			[idx] "r" (3 + idx), [addr] "r" (addr));
+}
+
+static inline void aggregate_set_output_group_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 81" ::
+			[idx] "r" (3 + NAGGAUX), [addr] "r" (addr));
+}
+
+static inline void aggregate_set_output_key_addr(void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 81" ::
+			[idx] "r" (4 + NAGGAUX), [addr] "r" (addr));
+}
+
+static inline void aggregate_set_output_aux_addr(int idx, void *addr)
+{
+	asm volatile ("custom3 0, %[idx], %[addr], 81" ::
+			[idx] "r" (5 + NAGGAUX + idx), [addr] "r" (addr));
+}
+
+static inline void aggregate_set_group_size(int size)
+{
+	asm volatile ("custom3 0, %[idx], %[size], 82" ::
+			[idx] "r" (0), [size] "r" (size));
+}
+
+static inline void aggregate_set_key_size(int size)
+{
+	asm volatile ("custom3 0, %[idx], %[size], 82" ::
+			[idx] "r" (1), [size] "r" (size));
+}
+
+static inline void aggregate_set_aux_size(int idx, int size)
+{
+	asm volatile ("custom3 0, %[idx], %[size], 82" ::
+			[idx] "r" (2 + idx), [size] "r" (size));
+}
+
+static inline void aggregate_set_options(int up, int naux)
+{
+	asm volatile ("custom3 0, %[up], %[naux], 83" ::
+			[up] "r" (up), [naux] "r" (naux));
+}
+
+static inline unsigned long aggregate_get_count(int id)
+{
+	unsigned long count;
+	asm volatile ("custom3 %[count], %[id], 0, 84" :
+			[count] "=r" (count) :
+			[id] "r" (id));
+	return count;
 }
 
 #endif
