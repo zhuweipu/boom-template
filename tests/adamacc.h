@@ -133,7 +133,7 @@ static inline void ir_set_addr(int idx, void *addr)
 
 static inline void ir_set_len(unsigned long consLen, unsigned long readLen)
 {
-	asm volatile ("custom3 0, %[consLen], %[readLen], 18" ::
+	asm volatile ("custom3 0, %[consLen], %[readLen], 19" ::
 			[consLen] "r" (consLen), [readLen] "r" (readLen));
 }
 
