@@ -484,4 +484,22 @@ static inline void logalu_set_output(int op, void *addr)
 			[op] "r" (op), [addr] "r" (addr));
 }
 
+static inline void column_select_start(int id, unsigned long len)
+{
+	asm volatile ("custom3 0, %[id], %[len], 96" ::
+			[id] "r" (id), [len] "r" (len));
+}
+
+static inline void column_select_set_addr(void *inAddr, void *outAddr)
+{
+	asm volatile ("custom3 0, %[inAddr], %[outAddr], 97" ::
+			[inAddr] "r" (inAddr), [outAddr] "r" (outAddr));
+}
+
+static inline void column_select_set_options(int size, unsigned long stride)
+{
+	asm volatile ("custom3 0, %[size], %[stride], 98" ::
+			[size] "r" (size), [stride] "r" (stride));
+}
+
 #endif

@@ -5,7 +5,7 @@ OBJDUMP=riscv64-unknown-elf-objdump
 PYTHON=python
 
 PROGRAMS=partition concat ir cond-update append split boolgen filter \
-	sort colreduce aggregate logalu
+	sort colreduce aggregate logalu column-select
 EXECUTABLES=$(addsuffix .riscv,$(PROGRAMS))
 DUMPS=$(addsuffix .dump,$(PROGRAMS))
 
