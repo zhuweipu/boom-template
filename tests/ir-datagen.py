@@ -1,11 +1,15 @@
 import random
 import itertools
+import sys
 
-NCONSENSUS=2
-NREADS=4
+NCONSENSUS=3
+NREADS=2
 
-CONSENSUS_LEN=512
-READ_LEN=256
+CONSENSUS_LEN=1600
+READ_LEN=250
+
+PAD_CONSENSUS_LEN = 2048
+PAD_READ_LEN = 256
 
 def random_sequence(n):
     return ''.join(random.choice(['A', 'T', 'G', 'C']) for i in range(0, n))
@@ -60,7 +64,8 @@ def main():
     for cons in consensus:
         cons_pos_weights = []
         for (read, qual) in zip(reads, quality):
-            cons_pos_weights.append(min_weight_pos(cons, read, qual))
+            (pos, weight) = min_weight_pos(cons, read, qual)
+            cons_pos_weights.append((pos, weight))
         pos_weights.append(cons_pos_weights)
 
     ref_cons = pos_weights[0]
@@ -81,9 +86,9 @@ def main():
         positions.append(target + pos)
         swaps.append(1 if weight < ref_weight else 0)
 
-    print_strings("refConsensus", consensus, NCONSENSUS, CONSENSUS_LEN)
-    print_strings("refReads", reads, NREADS, READ_LEN)
-    print_bytes("refQuality", quality, NREADS, READ_LEN)
+    print_strings("refConsensus", consensus, NCONSENSUS, PAD_CONSENSUS_LEN)
+    print_strings("refReads", reads, NREADS, PAD_READ_LEN)
+    print_bytes("refQuality", quality, NREADS, PAD_READ_LEN)
     print_numbers(32, "refPositions", positions, NREADS)
     print_numbers(8, "refSwaps", swaps, NREADS)
 
