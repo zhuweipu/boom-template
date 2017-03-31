@@ -7,8 +7,11 @@ import coreplex.{WithL2Cache, WithPLRU, WithL2Capacity}
 import rocketchip.{WithNMemoryChannels, BaseConfig}
 import uncore.agents.NAcquireTransactors
 import groundtest.{WithGroundTest, WithMemtest}
-import adamacc.WithAdamAcc
+import adamacc._
+import rocket._
 import hwacha._
+import scala.math.max
+import chisel3.Module
 
 class WithOneChannel extends WithNMemoryChannels(1)
 class WithTwoChannels extends WithNMemoryChannels(2)
@@ -76,3 +79,38 @@ class HwachaConfig extends Config(
 
 class AdamAccConfig extends Config(
   new WithAdamAcc ++ new BaselineConfig)
+
+class WithAdamAccAndDma extends Config(
+  (pname, site, here) => pname match {
+    case BuildRoCC => Seq(
+      RoccParameters(
+        opcodes = OpcodeSet.custom2,
+        generator = (p: Parameters) => Module(new CopyAccelerator()(p)),
+        nMemChannels = site(NDmaTrackers),
+        nPTWPorts = 1),
+      RoccParameters(
+        opcodes = OpcodeSet.custom3,
+        generator = (p: Parameters) => Module(new AdamAccRoCC()(p)),
+        nMemChannels = site(AdamAccMemChannels),
+        nPTWPorts = 1))
+    case RoccMaxTaggedMemXacts => max(
+      new AdamAccMemParams(site).roccXacts,
+      3 * site(NDmaTrackerMemXacts))
+    case _ => throw new CDEMatchError
+  })
+
+class AdamAccDmaConfig extends Config(
+  new WithAdamAccAndDma ++ new WithAdamAcc ++ new WithDma ++
+  new BaselineConfig)
+
+class NoUnitAdamAccConfig extends Config(
+  new WithNoUnits ++ new AdamAccConfig)
+
+class PartitionerAdamAccConfig extends Config(
+  new WithPartitioner ++ new NoUnitAdamAccConfig)
+
+class SorterAdamAccConfig extends Config(
+  new WithSorter ++ new NoUnitAdamAccConfig)
+
+class IRAdamAccConfig extends Config(
+  new WithIR ++ new NoUnitAdamAccConfig)
