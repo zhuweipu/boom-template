@@ -419,3 +419,43 @@ Then add `yourproject` to the `EXTRA_PACKAGES` variable in the Makefrag.
 Now your project will be bundled into a jar file alongside the rocket-chip
 and testchipip libraries. You can then import the classes defined in the
 submodule in a new project.
+
+## Building and Running AdamACC
+
+You choose a unit test suite by selecting one of the configs present in the
+adamacc submodule (i.e. PartitionUnitTestConfig, CommonUnitTestConfig,
+TransformUnitTestConfig, IRUnitTestConfig, SorterUnitTestConfig,
+AggregatorUnitTestConfig). Build and run the test from the vsim directly
+using the following commands.
+
+    make PROJECT=adamacc CONFIG=PartitionUnitTestConfig
+    ./simv-adamacc-PartitionUnitTestConfig +verbose
+
+Or if you want to produce a waveform to open in dve
+
+    make PROJECT=adamacc CONFIG=PartitionUnitTestConfig debug
+    ./simv-adamacc-PartitionUnitTestConfig-debug +verbose +vcdplusfile=partition.vpd
+
+To build the full design, use the AdamAccConfig in the example project.
+
+    make CONFIG=AdamAccConfig
+
+Tests for the accelerator are in the tests directory. You can build them by
+running make in tests/, then run them from the vsim directory.
+
+    ./simv-example-AdamAccConfig ../tests/partition.riscv
+
+You can also build configurations with only a single subsystem
+(PartitionerAdamAccConfig, SorterAdamAccConfig, IRAdamAccConfig). These set
+the number of units to 0 for all but one of the subsystems, effectively
+disables them. You can still run programs so long as you don't use instructions
+that have been disabled.
+
+    make CONFIG=PartitionerAdamAccConfig
+    ./simv-example-PartitionerAdamAccConfig ../tests/partition.riscv
+
+    make CONFIG=SorterAdamAccConfig
+    ./simv-example-SorterAdamAccConfig ../tests/sort.riscv
+
+    make CONFIG=IRAdamAccConfig
+    ./simv-example-IRAdamAccConfig ../tests/ir.riscv
