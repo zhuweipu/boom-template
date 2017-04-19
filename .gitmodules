@@ -10,6 +10,3 @@
 [submodule "hwacha"]
 	path = hwacha
 	url = git@github.com:ucb-bar/hwacha.git
-[submodule "adamacc"]
-	path = adamacc
-	url = https://repo.eecs.berkeley.edu/git/users/lisakwu/adamacc.git
