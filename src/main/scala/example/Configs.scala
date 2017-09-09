@@ -1,6 +1,7 @@
 package example
 
 import chisel3._
+import dma.WithDma
 import freechips.rocketchip.config.{Parameters, Config}
 import freechips.rocketchip.coreplex.{WithRoccExample, WithNMemoryChannels}
 import freechips.rocketchip.diplomacy.LazyModule
@@ -54,3 +55,6 @@ class WithFourTrackers extends WithNBlockDeviceTrackers(4)
 
 class WithTwoMemChannels extends WithNMemoryChannels(2)
 class WithFourMemChannels extends WithNMemoryChannels(4)
+
+class DmaConfig extends Config(
+  new WithDma ++ new DefaultExampleConfig)
