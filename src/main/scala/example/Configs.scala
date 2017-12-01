@@ -2,10 +2,10 @@ package example
 
 import chisel3._
 import freechips.rocketchip.config.{Parameters, Config}
-import freechips.rocketchip.coreplex.{WithRoccExample, WithNMemoryChannels, WithNBigCores, WithRV32}
+import freechips.rocketchip.coreplex.{WithRoccExample, WithNMemoryChannels, WithNBigCores, WithRV32, RocketTilesKey}
 import freechips.rocketchip.devices.tilelink.BootROMParams
 import freechips.rocketchip.diplomacy.LazyModule
-import freechips.rocketchip.tile.XLen
+import freechips.rocketchip.tile.{XLen, RoCCParams, OpcodeSet}
 import testchipip._
 
 class WithBootROM extends Config((site, here, up) => {
@@ -39,6 +39,18 @@ class WithSimBlockDevice extends Config((site, here, up) => {
   }
 })
 
+class WithAccumulator extends Config((site, here, up) => {
+  case RocketTilesKey => up(RocketTilesKey, site).map { r =>
+    r.copy(
+      core = r.core.copy(nPMPs = 0),
+      rocc = Seq(
+        RoCCParams(
+          opcodes = OpcodeSet.custom0,
+          generator =
+            (p: Parameters) => LazyModule(new Accumulator()(p)))))
+  }
+})
+
 class BaseExampleConfig extends Config(
   new WithBootROM ++
   new freechips.rocketchip.system.DefaultConfig)
@@ -48,6 +60,9 @@ class DefaultExampleConfig extends Config(
 
 class RoccExampleConfig extends Config(
   new WithRoccExample ++ new DefaultExampleConfig)
+
+class AccumulatorConfig extends Config(
+  new WithAccumulator ++ new DefaultExampleConfig)
 
 class PWMConfig extends Config(new WithPWM ++ new BaseExampleConfig)
 
