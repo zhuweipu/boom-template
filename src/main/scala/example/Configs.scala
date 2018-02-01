@@ -6,6 +6,7 @@ import freechips.rocketchip.coreplex.{WithRoccExample, WithNMemoryChannels, With
 import freechips.rocketchip.diplomacy.{LazyModule, ValName}
 import freechips.rocketchip.devices.tilelink.BootROMParams
 import freechips.rocketchip.tile.XLen
+import freechips.rocketchip.coreplex.RocketTilesKey
 import testchipip._
 
 class WithBootROM extends Config((site, here, up) => {
@@ -45,8 +46,19 @@ class WithSimBlockDevice extends Config((site, here, up) => {
   }
 })
 
+class WithICache extends Config((site, here, up) => {
+  case RocketTilesKey => up(RocketTilesKey) map (tile => tile.copy(
+    icache = tile.icache map (_.copy(
+      nSets = 64,
+      nWays = 4,
+      rowBits = 128
+    ))
+  ))
+})
+
 class BaseExampleConfig extends Config(
   new WithBootROM ++
+  new WithICache ++
   new freechips.rocketchip.system.DefaultConfig)
 
 class DefaultExampleConfig extends Config(

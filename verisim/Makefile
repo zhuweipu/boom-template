@@ -20,6 +20,8 @@ LDFLAGS := $(LDFLAGS) -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -L$(sim_dir) -lfesv
 include $(base_dir)/Makefrag
 include $(sim_dir)/Makefrag-verilator
 
+chirrtl: $(build_dir)/$(PROJECT).$(MODEL).$(CONFIG).fir
+
 long_name = $(PROJECT).$(MODEL).$(CONFIG)
 
 sim_vsrcs = \
