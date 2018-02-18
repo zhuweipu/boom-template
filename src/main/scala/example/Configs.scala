@@ -1,6 +1,8 @@
 package example
 
 import chisel3._
+import chisel3.internal.sourceinfo.{SourceInfo, SourceLine}
+import freechips.rocketchip.util.property._
 import freechips.rocketchip.config.{Parameters, Config}
 import freechips.rocketchip.coreplex.{WithRoccExample, WithNMemoryChannels, WithNBigCores, WithRV32}
 import freechips.rocketchip.diplomacy.{LazyModule, ValName}
@@ -56,9 +58,24 @@ class WithICache extends Config((site, here, up) => {
   ))
 })
 
+class PrintfPropertyLibrary extends BasePropertyLibrary {
+  def generateProperty(prop_param: BasePropertyParameters)(implicit sourceInfo: SourceInfo) = {
+    prop_param match {
+      case CoverPropertyParameters(cond, label, message) =>
+        printf(p"COVER:$cond:$label:$message\n")
+      case _ => ???
+    }
+  }
+}
+
+class WithCoverage extends Config((site, here, up) => {
+  case PropertyLibrary => new PrintfPropertyLibrary
+})
+
 class BaseExampleConfig extends Config(
   new WithBootROM ++
   new WithICache ++
+  new WithCoverage ++
   new freechips.rocketchip.system.DefaultConfig)
 
 class DefaultExampleConfig extends Config(
