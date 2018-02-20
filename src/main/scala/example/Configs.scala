@@ -54,6 +54,12 @@ class WithICache extends Config((site, here, up) => {
       nSets = 64,
       nWays = 4,
       rowBits = 128
+    )),
+    dcache = tile.dcache map (_.copy(
+      nSets = 64,
+      nWays = 4,
+      // rowBits = 128,
+      nMSHRs = 2 // should be > 0
     ))
   ))
 })
