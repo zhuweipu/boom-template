@@ -54,11 +54,15 @@ class WithICache extends Config((site, here, up) => {
       nSets = 64,
       nWays = 4,
       rowBits = 128
-    )),
+    ))
+  ))
+})
+
+class WithNonBlockingDCache extends Config((site, here, up) => {
+  case RocketTilesKey => up(RocketTilesKey) map (tile => tile.copy(
     dcache = tile.dcache map (_.copy(
       nSets = 64,
       nWays = 4,
-      // rowBits = 128,
       nMSHRs = 2 // should be > 0
     ))
   ))
@@ -82,6 +86,7 @@ class BaseExampleConfig extends Config(
   new WithBootROM ++
   new WithICache ++
   new WithCoverage ++
+  new WithNonBlockingDCache ++
   new freechips.rocketchip.system.DefaultConfig)
 
 class DefaultExampleConfig extends Config(
