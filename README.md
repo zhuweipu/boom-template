@@ -2,7 +2,7 @@
 
 This is a starter template for your own RISC-V BOOM project.
 
-[BOOM](https://github.com/ucb-bar/riscv-boom) is a superscalar, out-of-order 
+[BOOM](https://github.com/riscv-boom/riscv-boom) is a superscalar, out-of-order 
 processor that implements RISC-V RV64G ISA. BOOM is a synthesizable core that 
 targets ASIC processes, and is written in the 
 [Chisel hardware construction language](http://chisel.eecs.berkeley.edu).
@@ -22,7 +22,7 @@ Privileged Arch v1.11 |√
 External Debug |√
 
 You can find more information about BOOM here:
-([github.com/ucb-bar/riscv-boom](https://github.com/ucb-bar/riscv-boom)).
+([github.com/riscv-boom/riscv-boom](https://github.com/riscv-boom/riscv-boom)).
 
 **Google group:** (https://groups.google.com/forum/#!forum/riscv-boom)
 
@@ -48,7 +48,7 @@ follows.
 
 After cloning this repo, you will need to initialize all of the submodules
 
-    git clone https://github.com/ccelio/boom-template.git
+    git clone https://github.com/riscv-boom/boom-template.git
     cd boom-template
     ./scripts/init-submodules.sh
     
@@ -128,7 +128,7 @@ number of failures like this:
 
 ### Git submodules are confusing -- how do I update to the latest BOOM? ###
 
-The [boom](https://github.com/ucb-bar/riscv-boom) and
+The [boom](https://github.com/riscv-boom/riscv-boom) and
 [rocket-chip](https://github.com/freechipsproject/rocket-chip) repositories are
 included as git submodules. This allows us to tag specific versions that should
 work together. You can think of git submodules as "pointers" to specific commits.
