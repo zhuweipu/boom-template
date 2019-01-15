@@ -1,13 +1,9 @@
 #! /bin/bash
 
-# top-level
-git submodule update --init
-# rocket-chip (skip tools)
-(cd rocket-chip && git submodule update --init riscv-tools)
-(cd rocket-chip/riscv-tools && git submodule update --init --recursive riscv-isa-sim riscv-fesvr riscv-pk riscv-opcodes riscv-tests riscv-gnu-toolchain riscv-openocd)
+BASE_DIR=`realpath ${0%/*}/..`
+source $BASE_DIR/scripts/general.sh
 
-echo "cd rocket-chip/riscv-tools"
-cd rocket-chip/riscv-tools
+cd $TOOLS_DIR
 # We need to build a RV64G toolchain (not RVC which is the current riscv-tools default).
 # Therefore, let's make our own build script and then invoke it.
 f=build-rv64g.sh
@@ -15,7 +11,7 @@ f=build-rv64g.sh
 if [[ ! -e "$f" ]]
 then
 	# If file doesn't exist, generate a new build script file.
-	echo "Generating script: rocket-chip/riscv-tools/$f"
+	echo "Generating script: $TOOLS_DIR/$f"
 	echo "#! /bin/bash" >> $f
 	echo "#" >> $f
 	echo "# Script to build RISC-V ISA simulator, proxy kernel, and GNU toolchain." >> $f
