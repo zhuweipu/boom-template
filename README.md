@@ -3,13 +3,13 @@
 This is a starter template for your own RISC-V BOOM project.
 
 [BOOM](https://github.com/riscv-boom/riscv-boom) is a superscalar, out-of-order 
-processor that implements RISC-V RV64G ISA. BOOM is a synthesizable core that 
+processor that implements the RISC-V RV64GC ISA. BOOM is a synthesizable core that 
 targets ASIC processes, and is written in the 
 [Chisel hardware construction language](http://chisel.eecs.berkeley.edu).
 
  Feature | BOOM
 --- | ---
-ISA | RISC-V (RV64G)
+ISA | RISC-V (RV64GC)
 Synthesizable |√
 FPGA |√
 Parameterized |√
@@ -267,7 +267,7 @@ compare against.
     cd rocket-chip/riscv-tools/riscv-isa-sim;
     mkdir build
     cd build
-    ../configure --prefix=$RISCV --with-fesvr=$RISCV --with-isa=rv64imafd --enable-commitlog
+    ../configure --prefix=$RISCV --with-fesvr=$RISCV --enable-commitlog
 
 Your new spike will ALWAYS print out a commit log to `stderr`. I recommend 
 you change the `prefix` to a different directory (and also build a new riscv-fesvr 
