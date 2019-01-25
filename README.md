@@ -112,7 +112,7 @@ You can manually override them like this
     make PROJECT=yourproject CONFIG=YourConfig
     ./simulator-yourproject-YourConfig ...
 
-### Running random tests with torture ###
+### Running random tests with torture or csmith utilities ###
 
 RISC-V Torture is included as a submodule and includes the ability to test
 BOOM. You can run a single test like so:
