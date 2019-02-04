@@ -1,57 +1,89 @@
-# Consolidate Makefile variables that are shared across simulator types.
+#########################################################################################
+# consolidated makefile variables shared across simulators
+#########################################################################################
 
+#########################################################################################
 # check RISCV environment variable
+#########################################################################################
 ifndef RISCV
 $(error Please set environment variable RISCV. Please take a look at README)
 endif
 
-
-ROCKETCHIP_DIR=$(base_dir)/rocket-chip
-EXTRA_PACKAGES=boom
-
+#########################################################################################
+# default variables to invoke the generator
+# descriptions:
+# 	PROJECT = the scala package to find the MODEL in
+# 	MODEL = the top level module of the project
+# 	CONFIG = the configuration class to give the parameters for the project
+# 	CFG_PROJECT = the scala package to find the CONFIG class
+#########################################################################################
 PROJECT ?= boom.system
 MODEL ?= TestHarness
 CONFIG ?= BoomConfig
 CFG_PROJECT ?= $(PROJECT)
 TB ?= TestDriver
 
-long_name = $(PROJECT).$(MODEL).$(CONFIG)
+#########################################################################################
+# path to rocket-chip and its classes
+#########################################################################################
+ROCKETCHIP_DIR=$(base_dir)/rocket-chip
+ROCKET_CLASSES ?= "$(ROCKETCHIP_DIR)/target/scala-2.12/classes:$(ROCKETCHIP_DIR)/chisel3/target/scala-2.12/*"
 
+#########################################################################################
+# names of different files used to compile
+#########################################################################################
+long_name = $(PROJECT).$(MODEL).$(CONFIG)
+FIRRTL_FILE = $(build_dir)/$(long_name).fir
+ANNO_FILE = $(build_dir)/$(long_name).anno.json
+VERILOG_FILE = $(build_dir)/$(long_name).v
+CONF_FILE = $(build_dir)/$(long_name).conf
+
+#########################################################################################
+# sbt launch command
+#########################################################################################
 SBT ?= java -Xmx2G -Xss8M -jar $(ROCKETCHIP_DIR)/sbt-launch.jar ++2.12.4
 
-ROCKET_CLASSES ?= "$(ROCKETCHIP_DIR)/target/scala-2.12/classes:$(ROCKETCHIP_DIR)/chisel3/target/scala-2.12/*"
+#########################################################################################
+# firrtl variables
+#########################################################################################
 FIRRTL_JAR ?= $(ROCKETCHIP_DIR)/firrtl/utils/bin/firrtl.jar
 FIRRTL ?= java -Xmx2G -Xss8M -cp "$(FIRRTL_JAR)":"$(ROCKET_CLASSES)" firrtl.Driver
-
 EXTRA_FIRRTL_ARGS ?=
 
+#########################################################################################
+# chisel variables
+#########################################################################################
 CHISEL_ARGS ?=
 
+#########################################################################################
+# executable to make behav srams
+#########################################################################################
 VLSI_MEM_GEN ?= $(base_dir)/rocket-chip/scripts/vlsi_mem_gen
 mem_gen = $(VLSI_MEM_GEN)
 
+#########################################################################################
+# bootrom variable 
 # TODO: BOOTROM specified only for dependence tracking.
-#  Remove this as we may choose to use different bootroms?
-#  Or can we make a dependency rule that searches for any and all bootroms in this project?
+#       remove this as we may choose to use different bootroms?
+#       or can we make a dependency rule that searches for any and all bootroms in this project?
+#########################################################################################
 bootrom_img = $(base_dir)/rocket-chip/bootrom/bootrom.img
 
+#########################################################################################
+# verilog and csrc files
+#########################################################################################
 sim_vsrcs = \
-	$(build_dir)/$(long_name).v \
+	$(VERILOG_FILE) \
 	$(base_dir)/rocket-chip/src/main/resources/vsrc/AsyncResetReg.v \
-#	$(base_dir)/testchipip/vsrc/SimBlockDevice.v \
-#	$(base_dir)/testchipip/vsrc/SimSerial.v \
 
 sim_csrcs = \
 	$(base_dir)/rocket-chip/src/main/resources/csrc/SimDTM.cc \
 	$(base_dir)/rocket-chip/src/main/resources/csrc/SimJTAG.cc \
 	$(base_dir)/rocket-chip/src/main/resources/csrc/remote_bitbang.cc \
-#	$(base_dir)/testchipip/csrc/blkdev.cc \
-#	$(base_dir)/testchipip/csrc/SimBlockDevice.cc \
-#	$(base_dir)/testchipip/csrc/SimSerial.cc \
-#	$(base_dir)/testchipip/csrc/verilator-harness.cc
 
-
-# Assembly/Benchmark Testing
+#########################################################################################
+# assembly/benchmark testing variables
+#########################################################################################
 disasm := 2>
 which_disasm := $(shell which spike-dasm 2> /dev/null)
 ifneq ($(which_disasm),)

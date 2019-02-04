@@ -133,6 +133,25 @@ tests. This can be invoked like this:
       
 # FAQ #
 
+### How can I add peripherals such as testchipip to BOOM?
+
+This repository is based off of https://github.com/ucb-bar/project-template and follows a similar procedure to
+add peripherals. Here is a brief set of instructions to follow:
+
+First, add your submodule, say `yourproject` to the `boom-template` repository. Your sources should be in the
+`yourproject/src/main/scala/...` directory. Next, in the `build.sbt` you need to add a new line indicating what
+projects (rocket-chip, boom, etc) `yourproject` depends on. It would look something like this:
+
+    lazy val yourproject = (project in file("yourproject")).settings(commonSettings).dependsOn(rocketchip, boom)
+
+Next, to make sure that `make` notices changed sources, add `yourproject` to `EXTRA_PACKAGES` in the `Makefrag`.
+Now, your sources should be found and built in the SBT build. If you want to make the default project be `yourproject`
+make sure to also change the following line in `build.sbt`:
+
+    onLoad in Global ~= (_ andThen ("project yourproject" :: _))
+
+For more detailed instructions please go to the `project-template` repository.
+
 ### Searching through the codebase is confusing -- How can I generate ctags for easy code navigation? ###
 
 Located in `boom-template/scripts/` is a quick ctags script called `gen-tags.sh` to help parse the codebase for
