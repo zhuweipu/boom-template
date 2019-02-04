@@ -1,4 +1,10 @@
-# Build and install our own Verilator, to work around versioning issues.
+#########################################################################################
+# verilator installation makefrag
+#########################################################################################
+
+#########################################################################################
+# build and install our own Verilator, to work around versioning issues.
+#########################################################################################
 VERILATOR_VERSION=4.008
 VERILATOR_SRCDIR=verilator/src/verilator-$(VERILATOR_VERSION)
 INSTALLED_VERILATOR=$(abspath verilator/install/bin/verilator)

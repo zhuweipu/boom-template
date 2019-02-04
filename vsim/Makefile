@@ -1,8 +1,23 @@
+#########################################################################################
+# vcs makefile
+#########################################################################################
+
+#########################################################################################
+# general path variables
+#########################################################################################
 base_dir=$(abspath ..)
 sim_dir=$(abspath .)
 build_dir=$(sim_dir)/generated-src
-output_dir=./output
+output_dir=$(sim_dir)/output
 
+#########################################################################################
+# include shared variables
+#########################################################################################
+include $(base_dir)/Makefrag-variables
+
+#########################################################################################
+# vcs simulation variables
+#########################################################################################
 SIMFLAGS=-q
 DUMP_FLAG=+vcdplusfile=
 DUMP_FSDB_FLAG=+fsdbfile=
@@ -10,15 +25,14 @@ DUMP_FSDB_FLAG=+fsdbfile=
 PERMISSIVE=+permissive
 PERMISSIVEOFF=+permissive-off
 
-
-include $(base_dir)/Makefrag-variables
-
-EXTRA_FIRRTL_ARGS=--infer-rw $(MODEL) --repl-seq-mem -c:$(MODEL):-o:$(build_dir)/$(notdir $(basename $@)).conf
-
+#########################################################################################
+# rules and variables to make different versions of the vcs simulator
+#########################################################################################
 sim = $(sim_dir)/simv-$(PROJECT)-$(CONFIG)
 sim_debug = $(sim_dir)/simv-$(PROJECT)-$(CONFIG)-debug
 sim_fsdb_debug = $(sim_dir)/simv-$(PROJECT)-$(CONFIG)-fsdb-debug
 
+.PHONY: default debug fsdb_debug
 default: $(sim)
 debug: $(sim_debug)
 fsdb_debug: $(sim_fsdb_debug)
@@ -29,6 +43,9 @@ sim_vsrcs += \
 	$(base_dir)/rocket-chip/src/main/resources/vsrc/SimDTM.v \
 	$(build_dir)/$(long_name).behav_srams.v
 
+#########################################################################################
+# vcs build variables
+#########################################################################################
 VCS = vcs -full64
 
 VCS_CC_OPTS = \
@@ -36,7 +53,7 @@ VCS_CC_OPTS = \
 	-CC "-I$(RISCV)/include -I$(base_dir)/testchipip/csrc" \
 	-CC "-std=c++11" \
 	-CC "-Wl,-rpath,$(RISCV)/lib" \
-	$(RISCV)/lib/libfesvr.so 
+	$(RISCV)/lib/libfesvr.so
 
 VCS_NONCC_OPTS = \
 	+lint=all,noVCDE,noONGS,noUI -error=PCWM-L -timescale=1ns/10ps -quiet \
@@ -56,18 +73,29 @@ VCS_NONCC_OPTS = \
 
 VCS_OPTS = -notice -line $(VCS_NONCC_OPTS) $(VCS_CC_OPTS)
 
+#########################################################################################
+# vcs specific firrtl args
+#########################################################################################
+EXTRA_FIRRTL_ARGS=--infer-rw $(MODEL) --repl-seq-mem -c:$(MODEL):-o:$(build_dir)/$(notdir $(basename $@)).conf
+
+#########################################################################################
+# general makefrag
 # Must place include here - verdi rule in Makefile requires VCS_NONCC_OPTS.
+#########################################################################################
 include $(base_dir)/Makefrag
 
-
+#########################################################################################
+# build behavioral srams verilog file
+#########################################################################################
 $(build_dir)/$(long_name).behav_srams.v : $(build_dir)/$(long_name).conf $(mem_gen)
 	cd $(build_dir) && \
 	rm -f $@ && \
 	$(mem_gen) $(build_dir)/$(long_name).conf >> $@.tmp && \
 	mv $@.tmp $@
 
-verilog: $(sim_vsrcs)
-
+#########################################################################################
+# build vcs simulator rules
+#########################################################################################
 $(build_dir)/$(long_name).d : $(sim) ;
 $(sim): $(sim_vsrcs) $(sim_csrcs)
 	rm -rf csrc && $(VCS) $(VCS_OPTS) -o $@ \
@@ -81,10 +109,12 @@ $(sim_fsdb_debug) : $(sim_vsrcs) $(sim_csrcs)
 	rm -rf csrc && $(VCS) $(VCS_OPTS) -o $@ \
 	+define+DEBUG -debug_pp +define+FSDB -debug_all -debug_access+all
 
+#########################################################################################
+# general cleanup
+#########################################################################################
+.PHONY: clean
 clean:
 	rm -rf generated-src csrc simv-* ucli.key vc_hdrs.h
-
-.PHONY: clean
 
 
 
