@@ -2,9 +2,9 @@
 
 This is a starter template for your own RISC-V BOOM project.
 
-[BOOM](https://github.com/riscv-boom/riscv-boom) is a superscalar, out-of-order 
-processor that implements the RISC-V RV64GC ISA. BOOM is a synthesizable core that 
-targets ASIC processes, and is written in the 
+[BOOM](https://github.com/riscv-boom/riscv-boom) is a superscalar, out-of-order
+processor that implements the RISC-V RV64GC ISA. BOOM is a synthesizable core that
+targets ASIC processes, and is written in the
 [Chisel hardware construction language](http://chisel.eecs.berkeley.edu).
 
  Feature | BOOM
@@ -33,7 +33,6 @@ The submodules and subdirectories for the project template are organized as
 follows.
 
  * rocket-chip - contains code for the RocketChip generator, Chisel HCL, and FIRRTL
- * rocket-chip/riscv-tools - contains the code for the compiler toolchain and other infrastructure
  * boom - contains code for the BOOM core and tile.
  * scripts - bash scripts for initializing repo, building RISC-V toolchain
  * testchipip - contains the serial adapter, block device, and associated verilog and C++ code
@@ -46,15 +45,24 @@ follows.
 
 ### Checking out the sources
 
-After cloning this repo, you will need to initialize all of the submodules
+After cloning this repo, you will need to initialize all of the submodules.
+You can choose whether to get the RISC-V toolchain also. First to get the repository do:
 
     git clone https://github.com/riscv-boom/boom-template.git
     cd boom-template
+
+Then if you want the RISC-V toolchain sources you can run the following (note:
+this puts the sources in the directory above `boom-template`):
+
     ./scripts/init-submodules.sh
-    
+
+Otherwise you can run the following:
+
+    ./scripts/init-submodules-no-riscv-tools.sh
+
 ### Building the tools
 
-The tools repo contains the cross-compiler toolchain, frontend server, and
+The tools repo `riscv-tools` contains the cross-compiler toolchain, frontend server, and
 proxy kernel, which you will need in order to compile code to RISC-V
 instructions and run them on your design. There are detailed instructions at
 https://github.com/riscv/riscv-tools. But to get a basic installation that
@@ -66,8 +74,7 @@ will work with BOOM, just the following steps are necessary.
 
     cd boom-template
     ./scripts/build-tools.sh
-    
-    
+
 ### Compiling and running the Verilator simulation
 
 To compile a BOOM simulator, run `make` in the "verisim" directory.
@@ -81,21 +88,21 @@ You can then use this executable to run any compatible RV64G code. For instance,
 to run one of the riscv-tools assembly tests.
 
     make output/rv64ui-p-simple.out
-    
+
  Or execute the entire `riscv-tests` suite:
- 
+
     make run
-    
+
  Or just a smaller regression suite:
- 
+
     make run-regression-tests
-    
+
  If you would like to get a `.vpd` waveform, you can instead use:
- 
+
     make output/rv64ui-p-simple.vpd
-    
+
  Or:
- 
+
     make run-debug
 
 If you later create your own project, you can use environment variables to
@@ -130,7 +137,7 @@ tests. This can be invoked like this:
     cd scripts/csmith
     ./install-csmith.sh # installs csmith to $RISCV
     ./run-csmith.sh --sim VERILATOR_SIM [--run NUMBER_OF_CSMITH_TESTS] [--parallel NUM_OF_PARALLEL_INSTANCES]
-      
+
 # FAQ #
 
 ### How can I add peripherals such as testchipip to BOOM?
@@ -184,9 +191,9 @@ recursive submodule update. This may take a while.
 
 ### How do I use VCS instead of Verilator? ###
 
-The `verisim` directory manages the Verilator build and run process. 
+The `verisim` directory manages the Verilator build and run process.
 
-The `vsim` directory manages the VCS build and run process. 
+The `vsim` directory manages the VCS build and run process.
 
 In either directory you can build and then run the `riscv-tests` using `make && make debug`.
 
@@ -202,18 +209,18 @@ to compile with waveform output enabled.
 
 To run *all* of the riscv-tests with `vpd` waveform output, you can invoke `make run-debug`.
 
-Individually, you run a specific test as `make output/rv64ui-p-simple.out` to run a regular test 
+Individually, you run a specific test as `make output/rv64ui-p-simple.out` to run a regular test
 or `make output/rv64ui-p-simple.vpd` to generate a `vpd` waveform.
 
-To get a `fsdb` dump, go to the `vsim` directory and invoke `make fsdb_debug` 
+To get a `fsdb` dump, go to the `vsim` directory and invoke `make fsdb_debug`
 to build a fsdb waveform-output-enabled BOOM
 simulator. The simulator will now be suffixed with `fsdb-debug`.  Do
 not do this under the `verisim` directory.  You cannot generate a fsdb
 enabled Verilator simulator.
 
-You can generate `fsdb` waveforms only when running tests individually with commands of the form 
-`make output/rv64ui-p-simple.fsdb`.  To invoke the `verdi` verification tool, run 
-`make output/rv64ui-p-simple.verdi`.  If the required fsdb file is not available, this make 
+You can generate `fsdb` waveforms only when running tests individually with commands of the form
+`make output/rv64ui-p-simple.fsdb`.  To invoke the `verdi` verification tool, run
+`make output/rv64ui-p-simple.verdi`.  If the required fsdb file is not available, this make
 command will generate it first before starting verdi.
 
 
@@ -223,18 +230,18 @@ Read the Makefile to find all of the special targets.
 
 You can add to your bash profile:
 
-    export MAKEFLAGS="-j `echo \`nproc\`*2/2|bc`" 
-    
-This will spawn as many threads as you have cores when invoking `make`, speed up compilation, 
-and run the `riscv-tests` in parallel. 
+    export MAKEFLAGS="-j `echo \`nproc\`*2/2|bc`"
+
+This will spawn as many threads as you have cores when invoking `make`, speed up compilation,
+and run the `riscv-tests` in parallel.
 
 **Warning**: if you are performing VCS simulation you will burn through your precious licenses.
 
 **Warning**: if you are writing a lot of data to the *.out files or *.vpd files you may hose your file system.
 
-Unfortunately, many of the structures in an OOO processor scale worse than linearly. 
+Unfortunately, many of the structures in an OOO processor scale worse than linearly.
 Also, some compilers struggle with large functions that arise when you turn the auto-generated
-Verilog into straight-line C++ code that is flattened across the whole design. 
+Verilog into straight-line C++ code that is flattened across the whole design.
 As such, VCS compiles much faster than Verilator (but runs much slower).
 
 Here are some times as measured on my machine using the verilator simulator:
@@ -242,7 +249,7 @@ Here are some times as measured on my machine using the verilator simulator:
   * `make CONFIG=MegaBoomConfig run` takes 57 minutes.
 
   * `make CONFIG=BoomConfig run` takes 39 minutes.
-  
+
   * `make CONFIG=SmallBoomConfig run` takes 15 minutes.
 
 To improve the speed of your run-debug loop, you can instead invoke a smaller set of tests:
@@ -260,18 +267,18 @@ First verify the software is not an issue. Run spike first:
 spike --isa=rv64imafd my_program
 
 # Then we can run on BOOM.
-./emulator-freechips.rocketchip.system-SmallBoomConfig my_program 
+./emulator-freechips.rocketchip.system-SmallBoomConfig my_program
 ````
 
-Also verify the riscv-tools you built is the one pointed to within 
-the boom-template/rocket-chip/riscv-tools repository. Otherwise a 
+Also verify the riscv-tools you built is the one pointed to within
+the boom-template/rocket-chip/riscv-tools repository. Otherwise a
 version mismatch can easily occur!
 
 
 ### How do I debug BOOM? ###
 
-I recommend opening up the waveform and starting with the following signals, 
-located in `TestDriver.testHarness.dut.tile.core`:
+When opening up the waveform, a good set of starting signals are
+(located in `TestDriver.testHarness.dut.tile.core`):
 
    * debug_tsc_reg (cycle counter)
    * debug_irt_reg (retired instruction counter)
@@ -287,16 +294,16 @@ located in `TestDriver.testHarness.dut.tile.core`:
 Go to `boom/src/main/scala/common/consts.scala` and change `COMMIT_LOG_PRINTF`
 to `true`. That will output a log of committed instructions.
 
-You can rebuild the `spike` ISA simulator to also print out a commit log to 
-compare against. 
+You can rebuild the `spike` ISA simulator to also print out a commit log to
+compare against.
 
     cd rocket-chip/riscv-tools/riscv-isa-sim;
     mkdir build
     cd build
     ../configure --prefix=$RISCV --with-fesvr=$RISCV --enable-commitlog
 
-Your new spike will ALWAYS print out a commit log to `stderr`. I recommend 
-you change the `prefix` to a different directory (and also build a new riscv-fesvr 
+Your new spike will ALWAYS print out a commit log to `stderr`. I recommend
+you change the `prefix` to a different directory (and also build a new riscv-fesvr
 to be placed in this same directory), rename your spike to something else
 (e.g., `lspike`), and add this `prefix/bin` to your path. In this manner, you won't
 overwrite your regular `spike` binary.
@@ -304,24 +311,24 @@ overwrite your regular `spike` binary.
 
 ### Why are the commit logs of BOOM and spike so different? ###
 
-Frustrating, right? 
+Frustrating, right?
 
-By default, the BOOM simulators built within the `verisim` and `vsim` 
-directories are tethered to the riscv-fesvr (to handle binary loading 
+By default, the BOOM simulators built within the `verisim` and `vsim`
+directories are tethered to the riscv-fesvr (to handle binary loading
 and proxying syscalls). The actual binary loading is performed using
 the Debug Transport Module (DTM) which implements the RISC-V External
-Debug Specification. The `riscv-fesvr` magically sends signals to the 
-DTM to interrupt BOOM and have it execute out of the Debug Program 
+Debug Specification. The `riscv-fesvr` magically sends signals to the
+DTM to interrupt BOOM and have it execute out of the Debug Program
 Buffer. In this manner, BOOM slowly loads the binary into its target
-memory. 
+memory.
 
-To proxy syscalls, the DTM occasionally interrupts the BOOM core to 
+To proxy syscalls, the DTM occasionally interrupts the BOOM core to
 have it read a special `tohost` memory location. If the `tohost` value
 is non-zero, the BOOM core has a message for the riscv-fesvr to handle.
 
-Spike is also tethered to the riscv-fesvr, but it can instantly load the 
+Spike is also tethered to the riscv-fesvr, but it can instantly load the
 test binary directly (and magically) into its target memory. There is no
-invocation of the Debug specification to do this. 
+invocation of the Debug specification to do this.
 
 Eventually, BOOM and spike will converge after they have each loaded the
 test binary into their memories. They will again diverge on ocassion to
@@ -339,7 +346,7 @@ DTM, but also more special-purpose built.
 
 Or, one could build a self-hosting BOOM system. But you need to provide the
 appropriate drivers, IP blocks, and `bootrom` to communicate with the system
-in some manner. An example self-hosted rocket-chip system that follows the 
+in some manner. An example self-hosted rocket-chip system that follows the
 `project-template` layout is the (https://github.com/sifive/freedom) platform.
 
 Processors are hard.
@@ -347,8 +354,8 @@ Processors are hard.
 ### VIM/bash isn't a development environment! How do I setup an IntelliJ IDE? ###
 
 Boom-template/rocket-chip/boom comes with a quite a project hierarchy that may be hard
-to keep track of in its entirety. Here's some steps to get started with IntelliJ. 
-This section is a work-in-progress, so please share your own tips and hints on the 
+to keep track of in its entirety. Here's some steps to get started with IntelliJ.
+This section is a work-in-progress, so please share your own tips and hints on the
 mailing list.
 
 **Step 1:** Install a JDK (you have probably already done this, but you need to find it).
@@ -366,11 +373,11 @@ This will give you a jdk that is probably in `/Library/Java/JavaVirtualMachines`
 Run it through some tests to make sure everything works. This is important, as this will
 build a `lib` file full of `jar` files of Chisel, FIRRTL, RocketChip, BOOM, and others.
 
-**Step 3:** Import a project in IntelliJ. Select `boom-template/build.sbt`. Use Java 1.8. 
+**Step 3:** Import a project in IntelliJ. Select `boom-template/build.sbt`. Use Java 1.8.
 
 **Step 4:** Right-click on `boom-template/lib` in your project hierarchy and `Add as Library`.
 
-**Step 5:** Right-click on `boom-template/boom/src` and `Mark Directory as -> Sources Root`. 
+**Step 5:** Right-click on `boom-template/boom/src` and `Mark Directory as -> Sources Root`.
 IntelliJ can't find source code that is not under `boom-template/src/main/scala` without help.
 
 **Step 6:** Right-click on `boom/src/main/scala/system/Generator` and `Run`. It will fail.
@@ -396,7 +403,7 @@ You can either build additional `Run` configurations, or connect to the existing
 This should compile a BOOM verilator-based emulator.
 
 **Step 11:** Edit your `Run->Edit Configurations..` to add new Run configurations for
-additional Make targets and `${CONFIG}` options. For development, 
+additional Make targets and `${CONFIG}` options. For development,
 `make $CONFIG=SmallBoomConfig run-regression-tests` is one recommended command.
 You can also choose to invoke Make manually in your terminal.
 

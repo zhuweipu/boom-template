@@ -3,8 +3,8 @@
 BASE_DIR=`realpath ${0%/*}/..`
 source $BASE_DIR/scripts/general.sh
 
-echo "cd rocket-chip/riscv-tools"
-cd rocket-chip/riscv-tools
+echo "cd $TOOLS_DIR"
+cd $TOOLS_DIR
 
 ./build.sh
 retVal=$?
