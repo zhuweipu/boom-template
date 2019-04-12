@@ -1,23 +1,20 @@
 #! /bin/bash
 
+BASE_DIR=`realpath ${0%/*}/..`
+source $BASE_DIR/scripts/general.sh
+
 # This script will:
 #  * Build a new Spike+riscv-fesvr+riscv-pk combo at $RISCV/logger,
 #  * Rename the spike in $RISCV/logger/bin to `lspike`.
 #  * This lspike will output the commit log stream to stderr.
 
-# top-level
-git submodule update --init
-(cd rocket-chip && git submodule update --init riscv-tools)
-(cd rocket-chip/riscv-tools && git submodule update --init --recursive riscv-isa-sim riscv-fesvr riscv-pk)
-
-echo "cd rocket-chip/riscv-tools"
-cd rocket-chip/riscv-tools
+cd $TOOLS_DIR
 f=build-logger.sh
 
 if [[ ! -e "$f" ]]
 then
 	# If file doesn't exist, generate a new build script file.
-	echo "Generating script: rocket-chip/riscv-tools/$f"
+	echo "Generating script: $TOOLS_DIR/$f"
 	echo "#! /bin/bash" >> $f
 	echo "#" >> $f
 	echo "# Script to build RISC-V ISA simulator, proxy kernel, and GNU toolchain with commit log output." >> $f
