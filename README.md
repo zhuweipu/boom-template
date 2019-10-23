@@ -1,3 +1,13 @@
+# DEPRECATED 
+
+# Please Use Chipyard (https://github.com/ucb-bar/chipyard) for building BOOM
+
+# DO NOT USE
+
+# DO NOT USE
+
+# DO NOT USE
+
 # RISC-V BOOM Project Template
 
 This is a starter template for your own RISC-V BOOM project.
